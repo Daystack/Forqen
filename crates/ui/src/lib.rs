@@ -18,7 +18,9 @@ pub mod palette;
 pub mod pulls;
 pub mod rebase;
 pub mod reflog;
+pub mod releases;
 pub mod review;
+pub mod search;
 pub mod settings;
 pub mod stash;
 pub mod state;
@@ -107,6 +109,10 @@ pub fn build_window(
     let search_btn = gtk::Button::from_icon_name("system-search-symbolic");
     search_btn.set_tooltip_text(Some("Search the repository"));
     header.pack_start(&search_btn);
+
+    let releases_btn = gtk::Button::from_icon_name("package-x-generic-symbolic");
+    releases_btn.set_tooltip_text(Some("Releases"));
+    header.pack_start(&releases_btn);
 
     let account_btn = gtk::Button::from_icon_name("avatar-default-symbolic");
     account_btn.set_tooltip_text(Some("Sign in to GitHub"));
@@ -591,6 +597,7 @@ pub fn build_window(
                 &reflog_btn,
                 &["<Control><Shift>z"],
             ),
+            ("releases", "Releases", &releases_btn, &[]),
             (
                 "search",
                 "Search the repository",
@@ -649,6 +656,56 @@ pub fn build_window(
                     }
                 }),
             );
+        });
+    }
+
+    {
+        let views_ = views.clone();
+        let window_ = window.clone();
+        let changes_ = changes.clone();
+        let stack_ = stack.clone();
+        search_btn.connect_clicked(move |_| {
+            let changes_inner = changes_.clone();
+            let stack_inner = stack_.clone();
+            search::SearchDialog::present(
+                &window_,
+                views_.state.clone(),
+                // Opening a result means showing that file's diff, which lives
+                // on the Changes page — so go there rather than leaving the
+                // user wherever they searched from.
+                Rc::new(move |path| {
+                    stack_inner.set_visible_child_name("changes");
+                    changes_inner.reveal_path(path);
+                }),
+            );
+        });
+    }
+
+    {
+        let views_ = views.clone();
+        let window_ = window.clone();
+        let rt_ = rt.clone();
+        releases_btn.connect_clicked(move |_| {
+            // Needs a GitHub remote and an account; without them the dialog
+            // could only ever show an error, so say so instead of opening it.
+            let Some(target) = views_.github_target() else {
+                let d = adw::AlertDialog::new(
+                    Some("Releases need GitHub"),
+                    Some("This repository has no GitHub remote, or no account is signed in."),
+                );
+                d.add_response("ok", "OK");
+                d.present(Some(&window_));
+                return;
+            };
+
+            // Offer the tag describing HEAD — creating a release almost always
+            // follows tagging.
+            let tag = views_
+                .state
+                .with(|s| git::refs::latest_tag(&s.repo).ok().flatten())
+                .flatten();
+
+            releases::ReleasesDialog::present(&window_, target, rt_.clone(), tag);
         });
     }
 
@@ -931,6 +988,16 @@ impl Views {
         } else if self.stack.visible_child_name().as_deref() == Some("conflicts") {
             self.stack.set_visible_child_name("changes");
         }
+    }
+
+    /// The GitHub repository and client for the open repo, when both exist.
+    fn github_target(&self) -> Option<pulls::Target> {
+        let (owner, repo) = pulls::detect_repo(&self.state)?;
+        Some(pulls::Target {
+            owner,
+            repo,
+            client: github_client()?,
+        })
     }
 
     /// Bind the Pull Requests page to this repository, or hide it.

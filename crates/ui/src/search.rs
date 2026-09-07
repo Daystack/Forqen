@@ -110,7 +110,9 @@ impl SearchDialog {
             return;
         }
 
-        let result = self.state.with(|s| git::search::search(&s.repo, query, 100));
+        let result = self
+            .state
+            .with(|s| git::search::search(&s.repo, query, 100));
         let hits = match result {
             Some(Ok(h)) => h,
             Some(Err(e)) => {
@@ -225,11 +227,7 @@ fn row(h: &Hit) -> gtk::ListBoxRow {
     row
 }
 
-fn build_layout(
-    entry: &gtk::SearchEntry,
-    list: &gtk::ListBox,
-    status: &gtk::Label,
-) -> gtk::Widget {
+fn build_layout(entry: &gtk::SearchEntry, list: &gtk::ListBox, status: &gtk::Label) -> gtk::Widget {
     entry.set_margin_start(12);
     entry.set_margin_end(12);
     entry.set_margin_top(12);

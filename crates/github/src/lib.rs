@@ -14,6 +14,7 @@ pub mod models;
 pub mod notifications;
 pub mod pulls;
 pub mod rate_limit;
+pub mod releases;
 pub mod reviews;
 
 use std::sync::{Arc, Mutex};

@@ -101,6 +101,29 @@ fn group_order(k: RefKind) -> u8 {
     }
 }
 
+/// The most recent tag reachable from HEAD, if any.
+///
+/// `describe --tags --abbrev=0` rather than the newest tag by date: a release
+/// is cut from a commit, and the tag that describes HEAD is the one being
+/// released. Sorting tags by creation date would offer one from an unrelated
+/// branch.
+pub fn latest_tag(repo: &Repo) -> Result<Option<String>, GitError> {
+    let workdir = repo.workdir().unwrap_or_else(|| repo.git_dir());
+    let out = std::process::Command::new("git")
+        .arg("-C")
+        .arg(workdir)
+        .args(["describe", "--tags", "--abbrev=0"])
+        .output()?;
+
+    // Exit 128 means no tags are reachable, which is ordinary in a young
+    // repository and not an error.
+    if !out.status.success() {
+        return Ok(None);
+    }
+    let tag = String::from_utf8_lossy(&out.stdout).trim().to_string();
+    Ok((!tag.is_empty()).then_some(tag))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -155,5 +178,33 @@ mod tests {
         assert_eq!(shorten("refs/heads/feat/x"), "feat/x");
         assert_eq!(shorten("refs/remotes/origin/main"), "origin/main");
         assert_eq!(shorten("HEAD"), "HEAD");
+    }
+
+    #[test]
+    fn the_latest_tag_is_the_one_describing_head() {
+        let dir = fixture(3);
+        let repo = Repo::open(dir.path()).unwrap();
+        assert_eq!(
+            latest_tag(&repo).unwrap(),
+            None,
+            "an untagged repository has none, which is not an error"
+        );
+
+        let run = |args: &[&str]| {
+            std::process::Command::new("git")
+                .arg("-C")
+                .arg(dir.path())
+                .args(args)
+                .output()
+                .unwrap()
+        };
+        run(&["tag", "v0.1.0", "HEAD~1"]);
+        run(&["tag", "v0.2.0"]);
+
+        assert_eq!(
+            latest_tag(&repo).unwrap().as_deref(),
+            Some("v0.2.0"),
+            "the tag describing HEAD, not merely the newest one"
+        );
     }
 }

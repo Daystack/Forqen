@@ -33,7 +33,7 @@ RSS growth exceeds 64MB. Current measurement: **12MB**.
 
 ## Status
 
-R0 through R4 complete, R5 mostly. 289 tests.
+R0 through R4 complete, R5 mostly. 297 tests.
 
 **Engine — all tested against real repositories:**
 windowed history over large repositories · refs · working-tree status ·
@@ -109,7 +109,10 @@ messages, grouped rather than blended — they answer different questions.
 It goes through `git grep`, so `.gitignore` is respected for free and
 `target/` is never searched.
 
-**Not built:** releases, gists, repo settings. See `PLAN.md`.
+Releases lists what has shipped with its notes and asset sizes, and creates a
+new one against an existing tag.
+
+**Not built:** gists, repo settings. See `PLAN.md`.
 
 **Needs setup before browser sign-in works:** the binary ships a placeholder
 GitHub App id. Register an App and rebuild with `FORQEN_CLIENT_ID=<id>`, or use
@@ -215,7 +218,7 @@ for the keyring, and git itself is bundled as a module because
 ## Testing
 
 ```bash
-cargo test --workspace                       # 289 tests
+cargo test --workspace                       # 297 tests
 cargo test -p git -p auth -p db -p github    # 149 of them, no display server needed
 cargo test -p git --test memcheck --release  # the memory gate
 cargo test -p auth -- --ignored              # keyring round trip, needs a session bus
