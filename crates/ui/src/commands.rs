@@ -76,6 +76,32 @@ pub fn page_label(name: &str) -> String {
     }
 }
 
+/// Build an icon-only button that a screen reader can announce.
+///
+/// GTK4 falls back to the *icon name* for an icon button's accessible name,
+/// so an unlabelled one is read aloud as "view-refresh-symbolic". The tooltip
+/// becomes the description, which is not the same thing and is not read in
+/// place of a name. Both are set here so no call site has to remember.
+pub fn icon_button(icon: &str, label: &str) -> gtk::Button {
+    use gtk::prelude::*;
+
+    let button = gtk::Button::from_icon_name(icon);
+    button.set_tooltip_text(Some(label));
+    button.update_property(&[gtk::accessible::Property::Label(label)]);
+    button
+}
+
+/// The same for a toggle.
+pub fn icon_toggle(icon: &str, label: &str) -> gtk::ToggleButton {
+    use gtk::prelude::*;
+
+    let button = gtk::ToggleButton::new();
+    button.set_icon_name(icon);
+    button.set_tooltip_text(Some(label));
+    button.update_property(&[gtk::accessible::Property::Label(label)]);
+    button
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

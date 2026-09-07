@@ -181,9 +181,9 @@ impl ReviewPanel {
             text.append(&where_);
             text.append(&body);
 
-            let remove = gtk::Button::from_icon_name("user-trash-symbolic");
+            let remove =
+                crate::commands::icon_button("user-trash-symbolic", "Discard this comment");
             remove.add_css_class("flat");
-            remove.set_tooltip_text(Some("Discard this comment"));
             {
                 let this = self.clone();
                 remove.connect_clicked(move |_| {

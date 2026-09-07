@@ -84,41 +84,33 @@ pub fn build_window(
     // Reveals the branch list once a narrow window has hidden it. Always
     // present rather than only when collapsed: a toggle that appears and
     // disappears shifts every other button sideways as the window resizes.
-    let sidebar_btn = gtk::ToggleButton::new();
-    sidebar_btn.set_icon_name("sidebar-show-symbolic");
-    sidebar_btn.set_tooltip_text(Some("Show branches"));
+    let sidebar_btn = commands::icon_toggle("sidebar-show-symbolic", "Show branches");
     header.pack_start(&sidebar_btn);
 
-    let open_btn = gtk::Button::from_icon_name("folder-open-symbolic");
-    open_btn.set_tooltip_text(Some("Open a repository"));
+    let open_btn = crate::commands::icon_button("folder-open-symbolic", "Open a repository");
     header.pack_start(&open_btn);
 
-    let stash_btn = gtk::Button::from_icon_name("edit-paste-symbolic");
-    stash_btn.set_tooltip_text(Some("Stashes"));
+    let stash_btn = crate::commands::icon_button("edit-paste-symbolic", "Stashes");
 
-    let rebase_btn = gtk::Button::from_icon_name("view-sort-descending-symbolic");
-    rebase_btn.set_tooltip_text(Some("Interactive rebase"));
+    let rebase_btn =
+        crate::commands::icon_button("view-sort-descending-symbolic", "Interactive rebase");
 
-    let worktree_btn = gtk::Button::from_icon_name("view-dual-symbolic");
-    worktree_btn.set_tooltip_text(Some("Worktrees"));
+    let worktree_btn = crate::commands::icon_button("view-dual-symbolic", "Worktrees");
 
-    let reflog_btn = gtk::Button::from_icon_name("edit-undo-symbolic");
-    reflog_btn.set_tooltip_text(Some("History of HEAD — undo anything"));
+    let reflog_btn =
+        crate::commands::icon_button("edit-undo-symbolic", "History of HEAD — undo anything");
 
-    let search_btn = gtk::Button::from_icon_name("system-search-symbolic");
-    search_btn.set_tooltip_text(Some("Search the repository"));
+    let search_btn =
+        crate::commands::icon_button("system-search-symbolic", "Search the repository");
 
-    let releases_btn = gtk::Button::from_icon_name("package-x-generic-symbolic");
-    releases_btn.set_tooltip_text(Some("Releases"));
+    let releases_btn = crate::commands::icon_button("package-x-generic-symbolic", "Releases");
 
-    let settings_btn = gtk::Button::from_icon_name("emblem-system-symbolic");
-    settings_btn.set_tooltip_text(Some("Repository settings"));
+    let settings_btn =
+        crate::commands::icon_button("emblem-system-symbolic", "Repository settings");
 
-    let gists_btn = gtk::Button::from_icon_name("text-x-generic-symbolic");
-    gists_btn.set_tooltip_text(Some("Gists"));
+    let gists_btn = crate::commands::icon_button("text-x-generic-symbolic", "Gists");
 
-    let account_btn = gtk::Button::from_icon_name("avatar-default-symbolic");
-    account_btn.set_tooltip_text(Some("Sign in to GitHub"));
+    let account_btn = crate::commands::icon_button("avatar-default-symbolic", "Sign in to GitHub");
     // Nine buttons did not fit a tiled window, and a toolbar that overflows
     // hides exactly the commands someone was hunting for. What stays visible
     // is what gets used constantly — open, and the three transfer operations.
@@ -148,6 +140,7 @@ pub fn build_window(
     let menu_btn = gtk::MenuButton::new();
     menu_btn.set_icon_name("open-menu-symbolic");
     menu_btn.set_tooltip_text(Some("Menu"));
+    menu_btn.update_property(&[gtk::accessible::Property::Label("Menu")]);
     menu_btn.set_menu_model(Some(&menu));
     header.pack_end(&menu_btn);
 
@@ -156,16 +149,13 @@ pub fn build_window(
     // Push is separated from fetch/pull because it is the only one that changes
     // someone else's copy of history; grouping it with read-only operations
     // makes it too easy to hit by reflex.
-    let push_btn = gtk::Button::from_icon_name("send-to-symbolic");
-    push_btn.set_tooltip_text(Some("Push to origin"));
+    let push_btn = crate::commands::icon_button("send-to-symbolic", "Push to origin");
     header.pack_end(&push_btn);
 
-    let pull_btn = gtk::Button::from_icon_name("document-save-symbolic");
-    pull_btn.set_tooltip_text(Some("Pull from origin"));
+    let pull_btn = crate::commands::icon_button("document-save-symbolic", "Pull from origin");
     header.pack_end(&pull_btn);
 
-    let fetch_btn = gtk::Button::from_icon_name("view-refresh-symbolic");
-    fetch_btn.set_tooltip_text(Some("Fetch all remotes"));
+    let fetch_btn = crate::commands::icon_button("view-refresh-symbolic", "Fetch all remotes");
     header.pack_end(&fetch_btn);
 
     // --- sidebar ------------------------------------------------------------

@@ -100,8 +100,8 @@ impl ChangesView {
         discard_sel_btn.add_css_class("destructive-action");
         discard_sel_btn.set_sensitive(false);
 
-        let blame_btn = gtk::Button::from_icon_name("view-list-ordered-symbolic");
-        blame_btn.set_tooltip_text(Some("Blame this file"));
+        let blame_btn =
+            crate::commands::icon_button("view-list-ordered-symbolic", "Blame this file");
         blame_btn.set_sensitive(false);
 
         let paned = build_layout(
@@ -439,16 +439,15 @@ impl ChangesView {
         label.set_hexpand(true);
         label.set_ellipsize(gtk::pango::EllipsizeMode::Middle);
 
-        let action = gtk::Button::from_icon_name(if side == Side::Staged {
-            "list-remove-symbolic"
+        // The icon depends on which side the row is on, so this cannot use
+        // the helper — but it goes through the same pair of properties, set
+        // next to the constructor so the labelling is visible at a glance.
+        let (icon, verb) = if side == Side::Staged {
+            ("list-remove-symbolic", "Unstage this file")
         } else {
-            "list-add-symbolic"
-        });
-        action.set_tooltip_text(Some(if side == Side::Staged {
-            "Unstage"
-        } else {
-            "Stage"
-        }));
+            ("list-add-symbolic", "Stage this file")
+        };
+        let action = crate::commands::icon_button(icon, verb);
         action.add_css_class("flat");
 
         {

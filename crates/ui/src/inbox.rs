@@ -58,8 +58,7 @@ impl InboxView {
         read_btn.set_tooltip_text(Some("Mark read (e)"));
         let unsub_btn = gtk::Button::with_label("Unsubscribe");
         unsub_btn.set_tooltip_text(Some("Stop notifying about this thread (u)"));
-        let open_btn = gtk::Button::from_icon_name("web-browser-symbolic");
-        open_btn.set_tooltip_text(Some("Open on GitHub"));
+        let open_btn = crate::commands::icon_button("web-browser-symbolic", "Open on GitHub");
 
         for b in [&read_btn, &unsub_btn] {
             b.set_sensitive(false);

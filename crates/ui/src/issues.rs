@@ -88,8 +88,7 @@ impl IssuesView {
         let comment_btn = gtk::Button::with_label("Comment");
         comment_btn.add_css_class("suggested-action");
         let state_btn = gtk::Button::with_label("Close");
-        let open_web_btn = gtk::Button::from_icon_name("web-browser-symbolic");
-        open_web_btn.set_tooltip_text(Some("Open on GitHub"));
+        let open_web_btn = crate::commands::icon_button("web-browser-symbolic", "Open on GitHub");
 
         for b in [&comment_btn, &state_btn, &open_web_btn] {
             b.set_sensitive(false);

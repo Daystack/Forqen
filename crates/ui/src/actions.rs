@@ -72,8 +72,7 @@ impl ActionsView {
         let rerun_btn = gtk::Button::with_label("Re-run failed");
         let cancel_btn = gtk::Button::with_label("Cancel");
         cancel_btn.add_css_class("destructive-action");
-        let open_web_btn = gtk::Button::from_icon_name("web-browser-symbolic");
-        open_web_btn.set_tooltip_text(Some("Open on GitHub"));
+        let open_web_btn = crate::commands::icon_button("web-browser-symbolic", "Open on GitHub");
 
         for b in [&rerun_btn, &cancel_btn, &open_web_btn] {
             b.set_sensitive(false);

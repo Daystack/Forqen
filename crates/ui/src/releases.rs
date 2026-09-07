@@ -65,8 +65,7 @@ impl ReleasesDialog {
 
         let new_btn = gtk::Button::with_label("New release…");
         new_btn.add_css_class("suggested-action");
-        let open_btn = gtk::Button::from_icon_name("web-browser-symbolic");
-        open_btn.set_tooltip_text(Some("Open on GitHub"));
+        let open_btn = crate::commands::icon_button("web-browser-symbolic", "Open on GitHub");
         open_btn.set_sensitive(false);
 
         let dialog = Rc::new(Self {

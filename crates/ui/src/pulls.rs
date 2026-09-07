@@ -93,12 +93,13 @@ impl PullsView {
         checkout_btn.add_css_class("suggested-action");
         checkout_btn.set_sensitive(false);
 
-        let open_web_btn = gtk::Button::from_icon_name("web-browser-symbolic");
-        open_web_btn.set_tooltip_text(Some("Open on GitHub"));
+        let open_web_btn = crate::commands::icon_button("web-browser-symbolic", "Open on GitHub");
         open_web_btn.set_sensitive(false);
 
-        let comment_btn = gtk::Button::from_icon_name("chat-bubble-text-symbolic");
-        comment_btn.set_tooltip_text(Some("Comment on the selected line"));
+        let comment_btn = crate::commands::icon_button(
+            "chat-bubble-text-symbolic",
+            "Comment on the selected line",
+        );
         comment_btn.set_sensitive(false);
 
         let review = ReviewPanel::new(rt.clone());

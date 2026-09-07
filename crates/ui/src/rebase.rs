@@ -218,18 +218,16 @@ impl RebaseDialog {
             summary.add_css_class("dim-label");
         }
 
-        let up = gtk::Button::from_icon_name("go-up-symbolic");
+        let up = crate::commands::icon_button("go-up-symbolic", "Move earlier");
         up.add_css_class("flat");
-        up.set_tooltip_text(Some("Move earlier"));
         up.set_sensitive(index > 0);
         {
             let this = self.clone();
             up.connect_clicked(move |_| this.move_step(index, index.saturating_sub(1)));
         }
 
-        let down = gtk::Button::from_icon_name("go-down-symbolic");
+        let down = crate::commands::icon_button("go-down-symbolic", "Move later");
         down.add_css_class("flat");
-        down.set_tooltip_text(Some("Move later"));
         down.set_sensitive(index + 1 < total);
         {
             let this = self.clone();

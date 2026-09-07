@@ -33,7 +33,7 @@ RSS growth exceeds 64MB. Current measurement: **12MB**.
 
 ## Status
 
-R0 through R5 complete. 315 tests.
+R0 through R5 complete, R6 hardening underway. 320 tests.
 
 **Engine — all tested against real repositories:**
 windowed history over large repositories · refs · working-tree status ·
@@ -224,7 +224,7 @@ for the keyring, and git itself is bundled as a module because
 ## Testing
 
 ```bash
-cargo test --workspace                       # 315 tests
+cargo test --workspace                       # 320 tests
 cargo test -p git -p auth -p db -p github    # 149 of them, no display server needed
 cargo test -p git --test memcheck --release  # the memory gate
 cargo test -p auth -- --ignored              # keyring round trip, needs a session bus
