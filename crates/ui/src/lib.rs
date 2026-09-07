@@ -14,6 +14,7 @@ pub mod diff_view;
 pub mod inbox;
 pub mod issues;
 pub mod login;
+pub mod palette;
 pub mod pulls;
 pub mod rebase;
 pub mod reflog;
@@ -563,22 +564,61 @@ pub fn build_window(
     // from the keyboard and each entry appears in the shell's action list.
     // Registering them on the application rather than the window also puts them
     // on the session bus, which is how they can be driven without a pointer.
-    install_actions(
+    let mut commands = install_actions(
         app,
         &[
-            ("open", &open_btn, &["<Control>o"]),
-            ("stashes", &stash_btn, &["<Control><Shift>s"]),
-            ("rebase", &rebase_btn, &["<Control><Shift>r"]),
-            ("worktrees", &worktree_btn, &["<Control><Shift>w"]),
-            ("reflog", &reflog_btn, &["<Control><Shift>z"]),
-            ("blame", changes.blame_button(), &["<Control><Shift>b"]),
-            ("fetch", &fetch_btn, &["<Control>r"]),
-            ("pull", &pull_btn, &["<Control><Shift>p"]),
-            ("push", &push_btn, &["<Control>p"]),
-            ("account", &account_btn, &[]),
+            ("open", "Open a repository", &open_btn, &["<Control>o"]),
+            ("stashes", "Stashes", &stash_btn, &["<Control><Shift>s"]),
+            (
+                "rebase",
+                "Interactive rebase",
+                &rebase_btn,
+                &["<Control><Shift>r"],
+            ),
+            (
+                "worktrees",
+                "Worktrees",
+                &worktree_btn,
+                &["<Control><Shift>w"],
+            ),
+            (
+                "reflog",
+                "History of HEAD — undo anything",
+                &reflog_btn,
+                &["<Control><Shift>z"],
+            ),
+            (
+                "blame",
+                "Blame this file",
+                changes.blame_button(),
+                &["<Control><Shift>b"],
+            ),
+            ("fetch", "Fetch all remotes", &fetch_btn, &["<Control>r"]),
+            (
+                "pull",
+                "Pull from origin",
+                &pull_btn,
+                &["<Control><Shift>p"],
+            ),
+            ("push", "Push to origin", &push_btn, &["<Control>p"]),
+            ("account", "Sign in to GitHub", &account_btn, &[]),
         ],
     );
-    install_page_actions(app, &stack);
+    commands.extend(install_page_actions(app, &stack));
+
+    // The palette lists what the installers actually registered, so a command
+    // added without a palette entry is impossible by construction.
+    {
+        let app_ = app.clone();
+        let window_ = window.clone();
+        let commands = commands.clone();
+        let action = gtk::gio::SimpleAction::new("palette", None);
+        action.connect_activate(move |_, _| {
+            palette::Palette::present(&window_, app_.clone(), commands.clone());
+        });
+        app.add_action(&action);
+        app.set_accels_for_action("app.palette", &["<Control><Shift>k", "<Control><Shift>p"]);
+    }
 
     {
         let views_ = views.clone();
@@ -719,8 +759,12 @@ fn github_client() -> Option<std::sync::Arc<github::Client>> {
 /// Takes the bindings as data rather than one parameter per button: the list
 /// grows with every command, and a positional signature that long is one
 /// transposed pair away from wiring a shortcut to the wrong action.
-fn install_actions(app: &adw::Application, entries: &[(&str, &gtk::Button, &[&str])]) {
-    for (name, button, accels) in entries {
+fn install_actions(
+    app: &adw::Application,
+    entries: &[(&str, &str, &gtk::Button, &[&str])],
+) -> Vec<palette::Command> {
+    let mut commands = Vec::new();
+    for (name, label, button, accels) in entries {
         let action = gtk::gio::SimpleAction::new(name, None);
         let button = (*button).clone();
         action.connect_activate(move |_, _| {
@@ -732,7 +776,36 @@ fn install_actions(app: &adw::Application, entries: &[(&str, &gtk::Button, &[&st
         if !accels.is_empty() {
             app.set_accels_for_action(&format!("app.{name}"), accels);
         }
+        commands.push(palette::Command {
+            action: (*name).to_string(),
+            label: (*label).to_string(),
+            accel: accels.first().map(|a| pretty_accel(a)).unwrap_or_default(),
+        });
     }
+    commands
+}
+
+/// Render a GTK accelerator as something a person reads.
+///
+/// `<Control><Shift>p` is how GTK spells it and not how anyone says it.
+fn pretty_accel(accel: &str) -> String {
+    accel
+        .replace("<Control>", "Ctrl+")
+        .replace("<Shift>", "Shift+")
+        .replace("<Alt>", "Alt+")
+        .replace("<Primary>", "Ctrl+")
+        .chars()
+        .enumerate()
+        .map(|(i, c)| {
+            // The final key is a bare letter in GTK's spelling; capitalise it
+            // so "Ctrl+Shift+p" does not read as a typo.
+            if i > 0 && c.is_ascii_lowercase() && accel.ends_with(c) {
+                c.to_ascii_uppercase()
+            } else {
+                c
+            }
+        })
+        .collect()
 }
 
 /// One action per page, so every view is reachable from the keyboard.
@@ -741,7 +814,8 @@ fn install_actions(app: &adw::Application, entries: &[(&str, &gtk::Button, &[&st
 /// Pull Requests without a GitHub remote — is a no-op rather than an error:
 /// the shortcut simply does nothing, which is what a disabled menu item would
 /// do.
-fn install_page_actions(app: &adw::Application, stack: &adw::ViewStack) {
+fn install_page_actions(app: &adw::Application, stack: &adw::ViewStack) -> Vec<palette::Command> {
+    let mut commands = Vec::new();
     for (i, name) in [
         "history",
         "changes",
@@ -766,11 +840,21 @@ fn install_page_actions(app: &adw::Application, stack: &adw::ViewStack) {
             }
         });
         app.add_action(&action);
-        app.set_accels_for_action(
-            &format!("app.{action_name}"),
-            &[&format!("<Control>{}", i + 1)],
-        );
+        let accel = format!("<Control>{}", i + 1);
+        app.set_accels_for_action(&format!("app.{action_name}"), &[&accel]);
+
+        let mut label = format!("Go to {name}");
+        // Title-case the page name so the palette reads as prose.
+        if let Some(first) = label.get(6..7) {
+            label = format!("Go to {}{}", first.to_uppercase(), &name[1..]);
+        }
+        commands.push(palette::Command {
+            action: action_name,
+            label,
+            accel: pretty_accel(&accel),
+        });
     }
+    commands
 }
 
 /// Install the application stylesheet once per display.
