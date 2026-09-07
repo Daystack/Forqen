@@ -15,6 +15,7 @@ pub mod issues;
 pub mod login;
 pub mod pulls;
 pub mod rebase;
+pub mod reflog;
 pub mod review;
 pub mod settings;
 pub mod stash;
@@ -96,6 +97,10 @@ pub fn build_window(
     let worktree_btn = gtk::Button::from_icon_name("view-dual-symbolic");
     worktree_btn.set_tooltip_text(Some("Worktrees"));
     header.pack_start(&worktree_btn);
+
+    let reflog_btn = gtk::Button::from_icon_name("edit-undo-symbolic");
+    reflog_btn.set_tooltip_text(Some("History of HEAD — undo anything"));
+    header.pack_start(&reflog_btn);
 
     let account_btn = gtk::Button::from_icon_name("avatar-default-symbolic");
     account_btn.set_tooltip_text(Some("Sign in to GitHub"));
@@ -562,6 +567,7 @@ pub fn build_window(
             ("stashes", &stash_btn, &["<Control><Shift>s"]),
             ("rebase", &rebase_btn, &["<Control><Shift>r"]),
             ("worktrees", &worktree_btn, &["<Control><Shift>w"]),
+            ("reflog", &reflog_btn, &["<Control><Shift>z"]),
             ("fetch", &fetch_btn, &["<Control>r"]),
             ("pull", &pull_btn, &["<Control><Shift>p"]),
             ("push", &push_btn, &["<Control>p"]),
@@ -580,6 +586,27 @@ pub fn build_window(
                 views_inner.state.clone(),
                 // Stashing and popping both rewrite the working tree, so every
                 // view of it has to catch up.
+                Rc::new(move || {
+                    if let Some(Some(path)) = views_inner
+                        .state
+                        .with(|s| s.repo.workdir().map(|p| p.to_path_buf()))
+                    {
+                        views_inner.load_repo(&path);
+                    }
+                }),
+            );
+        });
+    }
+
+    {
+        let views_ = views.clone();
+        let window_ = window.clone();
+        reflog_btn.connect_clicked(move |_| {
+            let views_inner = views_.clone();
+            reflog::ReflogDialog::present(
+                &window_,
+                views_inner.state.clone(),
+                // Restoring moves HEAD, so history, refs and status all follow.
                 Rc::new(move || {
                     if let Some(Some(path)) = views_inner
                         .state

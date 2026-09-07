@@ -33,7 +33,7 @@ RSS growth exceeds 64MB. Current measurement: **12MB**.
 
 ## Status
 
-R0 through R3 complete, R4 mostly. 243 tests.
+R0 through R3 complete, R4 mostly. 256 tests.
 
 **Engine — all tested against real repositories:**
 windowed history over large repositories · refs · working-tree status ·
@@ -90,7 +90,12 @@ A worktree manager creates, lists and removes additional checkouts — the
 feature that makes reviewing someone else's branch cheap, since it needs no
 stashing and leaves the current work alone.
 
-**Not built:** reflog, search, releases. See `PLAN.md`.
+A reflog browser reads every position HEAD has held and restores any of them,
+so a bad reset or a rebase that ate a commit is a button rather than a
+search-engine problem. Resets, rebases and merges are surfaced by default,
+since the rest of a reflog is noise.
+
+**Not built:** blame, search, releases. See `PLAN.md`.
 
 **Needs setup before browser sign-in works:** the binary ships a placeholder
 GitHub App id. Register an App and rebuild with `FORQEN_CLIENT_ID=<id>`, or use
@@ -196,7 +201,7 @@ for the keyring, and git itself is bundled as a module because
 ## Testing
 
 ```bash
-cargo test --workspace                       # 243 tests
+cargo test --workspace                       # 256 tests
 cargo test -p git -p auth -p db -p github    # 149 of them, no display server needed
 cargo test -p git --test memcheck --release  # the memory gate
 cargo test -p auth -- --ignored              # keyring round trip, needs a session bus
