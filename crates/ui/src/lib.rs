@@ -104,6 +104,10 @@ pub fn build_window(
     reflog_btn.set_tooltip_text(Some("History of HEAD — undo anything"));
     header.pack_start(&reflog_btn);
 
+    let search_btn = gtk::Button::from_icon_name("system-search-symbolic");
+    search_btn.set_tooltip_text(Some("Search the repository"));
+    header.pack_start(&search_btn);
+
     let account_btn = gtk::Button::from_icon_name("avatar-default-symbolic");
     account_btn.set_tooltip_text(Some("Sign in to GitHub"));
     header.pack_end(&account_btn);
@@ -586,6 +590,12 @@ pub fn build_window(
                 "History of HEAD — undo anything",
                 &reflog_btn,
                 &["<Control><Shift>z"],
+            ),
+            (
+                "search",
+                "Search the repository",
+                &search_btn,
+                &["<Control>f"],
             ),
             (
                 "blame",

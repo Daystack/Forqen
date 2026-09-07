@@ -33,7 +33,7 @@ RSS growth exceeds 64MB. Current measurement: **12MB**.
 
 ## Status
 
-R0 through R4 complete, R5 started. 278 tests.
+R0 through R4 complete, R5 mostly. 289 tests.
 
 **Engine — all tested against real repositories:**
 windowed history over large repositories · refs · working-tree status ·
@@ -104,7 +104,12 @@ A command palette (Ctrl+Shift+P) reaches every command by typing initials —
 `ir` finds "Interactive rebase". It is built from the same action registry the
 toolbar uses, so a command cannot exist without appearing there.
 
-**Not built:** search, releases. See `PLAN.md`.
+Repository search (Ctrl+F) covers file contents, file names and commit
+messages, grouped rather than blended — they answer different questions.
+It goes through `git grep`, so `.gitignore` is respected for free and
+`target/` is never searched.
+
+**Not built:** releases, gists, repo settings. See `PLAN.md`.
 
 **Needs setup before browser sign-in works:** the binary ships a placeholder
 GitHub App id. Register an App and rebuild with `FORQEN_CLIENT_ID=<id>`, or use
@@ -210,7 +215,7 @@ for the keyring, and git itself is bundled as a module because
 ## Testing
 
 ```bash
-cargo test --workspace                       # 278 tests
+cargo test --workspace                       # 289 tests
 cargo test -p git -p auth -p db -p github    # 149 of them, no display server needed
 cargo test -p git --test memcheck --release  # the memory gate
 cargo test -p auth -- --ignored              # keyring round trip, needs a session bus

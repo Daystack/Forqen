@@ -193,6 +193,27 @@ impl ChangesView {
         }
     }
 
+    /// Show a file by path, refreshing first so a file that is not currently
+    /// listed — one with no uncommitted changes — still resolves.
+    pub fn reveal_path(self: &Rc<Self>, path: &str) {
+        self.refresh();
+
+        let side = self
+            .state
+            .with(|s| status::status(&s.repo))
+            .and_then(Result::ok)
+            .map(|st| {
+                if st.staged().any(|e| e.path == path) {
+                    Side::Staged
+                } else {
+                    Side::Unstaged
+                }
+            })
+            .unwrap_or(Side::Unstaged);
+
+        self.show_diff(side, path);
+    }
+
     /// Give the page what blame needs to name pull requests.
     pub fn set_blame_context(
         &self,
