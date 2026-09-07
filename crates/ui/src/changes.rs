@@ -214,6 +214,28 @@ impl ChangesView {
         self.show_diff(side, path);
     }
 
+    /// The file currently shown and its contents, for sharing as a gist.
+    pub fn shown_file_contents(&self) -> Option<(String, String)> {
+        let (_, path) = self.shown.borrow().clone()?;
+        let text = self
+            .state
+            .with(|s| {
+                s.repo
+                    .workdir()
+                    .map(|w| w.join(&path))
+                    .and_then(|p| std::fs::read_to_string(p).ok())
+            })
+            .flatten()?;
+
+        // Just the file name: a gist has no directories, and a filename
+        // containing slashes is rejected.
+        let name = std::path::Path::new(&path)
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or(path);
+        Some((name, text))
+    }
+
     /// Give the page what blame needs to name pull requests.
     pub fn set_blame_context(
         &self,

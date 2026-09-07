@@ -11,6 +11,7 @@ pub mod changes;
 pub mod commit_list;
 pub mod conflicts;
 pub mod diff_view;
+pub mod gists;
 pub mod inbox;
 pub mod issues;
 pub mod login;
@@ -113,6 +114,10 @@ pub fn build_window(
     let releases_btn = gtk::Button::from_icon_name("package-x-generic-symbolic");
     releases_btn.set_tooltip_text(Some("Releases"));
     header.pack_start(&releases_btn);
+
+    let gists_btn = gtk::Button::from_icon_name("text-x-generic-symbolic");
+    gists_btn.set_tooltip_text(Some("Gists"));
+    header.pack_start(&gists_btn);
 
     let account_btn = gtk::Button::from_icon_name("avatar-default-symbolic");
     account_btn.set_tooltip_text(Some("Sign in to GitHub"));
@@ -598,6 +603,7 @@ pub fn build_window(
                 &["<Control><Shift>z"],
             ),
             ("releases", "Releases", &releases_btn, &[]),
+            ("gists", "Gists", &gists_btn, &[]),
             (
                 "search",
                 "Search the repository",
@@ -678,6 +684,29 @@ pub fn build_window(
                     changes_inner.reveal_path(path);
                 }),
             );
+        });
+    }
+
+    {
+        let views_ = views.clone();
+        let window_ = window.clone();
+        let rt_ = rt.clone();
+        let changes_ = changes.clone();
+        gists_btn.connect_clicked(move |_| {
+            let Some(target) = views_.github_target() else {
+                let d = adw::AlertDialog::new(
+                    Some("Gists need GitHub"),
+                    Some("No account is signed in."),
+                );
+                d.add_response("ok", "OK");
+                d.present(Some(&window_));
+                return;
+            };
+
+            // The common reason to open this is "share this file", so start
+            // from whatever the Changes page is showing.
+            let prefill = changes_.shown_file_contents();
+            gists::GistsDialog::present(&window_, target, rt_.clone(), prefill);
         });
     }
 

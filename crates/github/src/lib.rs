@@ -8,6 +8,7 @@
 //! notifications inbox being free and being impossible.
 
 pub mod actions;
+pub mod gists;
 pub mod graphql;
 pub mod issues;
 pub mod models;
