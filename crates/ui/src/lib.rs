@@ -21,6 +21,7 @@ pub mod pulls;
 pub mod rebase;
 pub mod reflog;
 pub mod releases;
+pub mod repo_settings;
 pub mod review;
 pub mod search;
 pub mod settings;
@@ -110,6 +111,9 @@ pub fn build_window(
     let releases_btn = gtk::Button::from_icon_name("package-x-generic-symbolic");
     releases_btn.set_tooltip_text(Some("Releases"));
 
+    let settings_btn = gtk::Button::from_icon_name("emblem-system-symbolic");
+    settings_btn.set_tooltip_text(Some("Repository settings"));
+
     let gists_btn = gtk::Button::from_icon_name("text-x-generic-symbolic");
     gists_btn.set_tooltip_text(Some("Gists"));
 
@@ -138,6 +142,7 @@ pub fn build_window(
     let github_section = gtk::gio::Menu::new();
     github_section.append(Some("Releases"), Some("app.releases"));
     github_section.append(Some("Gists"), Some("app.gists"));
+    github_section.append(Some("Repository settings"), Some("app.repo-settings"));
     menu.append_section(None, &github_section);
 
     let menu_btn = gtk::MenuButton::new();
@@ -616,6 +621,7 @@ pub fn build_window(
             ("search", &search_btn),
             ("releases", &releases_btn),
             ("gists", &gists_btn),
+            ("repo-settings", &settings_btn),
             ("fetch", &fetch_btn),
             ("pull", &pull_btn),
             ("push", &push_btn),
@@ -679,6 +685,24 @@ pub fn build_window(
                     changes_inner.reveal_path(path);
                 }),
             );
+        });
+    }
+
+    {
+        let views_ = views.clone();
+        let window_ = window.clone();
+        let rt_ = rt.clone();
+        settings_btn.connect_clicked(move |_| {
+            let Some(target) = views_.github_target() else {
+                let d = adw::AlertDialog::new(
+                    Some("Settings need GitHub"),
+                    Some("This repository has no GitHub remote, or no account is signed in."),
+                );
+                d.add_response("ok", "OK");
+                d.present(Some(&window_));
+                return;
+            };
+            repo_settings::RepoSettingsDialog::present(&window_, target, rt_.clone());
         });
     }
 

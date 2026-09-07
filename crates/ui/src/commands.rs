@@ -32,6 +32,7 @@ pub const BUTTON_COMMANDS: &[Spec] = &[
     ("search", "Search the repository", &["<Control>f"]),
     ("releases", "Releases", &[]),
     ("gists", "Gists", &[]),
+    ("repo-settings", "Repository settings", &[]),
     ("fetch", "Fetch all remotes", &["<Control>r"]),
     ("pull", "Pull from origin", &["<Control><Shift>p"]),
     ("push", "Push to origin", &["<Control>p"]),
