@@ -8,6 +8,7 @@
 pub mod actions;
 pub mod blame;
 pub mod changes;
+pub mod commands;
 pub mod commit_list;
 pub mod conflicts;
 pub mod diff_view;
@@ -606,49 +607,19 @@ pub fn build_window(
     let mut commands = install_actions(
         app,
         &[
-            ("open", "Open a repository", &open_btn, &["<Control>o"]),
-            ("stashes", "Stashes", &stash_btn, &["<Control><Shift>s"]),
-            (
-                "rebase",
-                "Interactive rebase",
-                &rebase_btn,
-                &["<Control><Shift>r"],
-            ),
-            (
-                "worktrees",
-                "Worktrees",
-                &worktree_btn,
-                &["<Control><Shift>w"],
-            ),
-            (
-                "reflog",
-                "History of HEAD — undo anything",
-                &reflog_btn,
-                &["<Control><Shift>z"],
-            ),
-            ("releases", "Releases", &releases_btn, &[]),
-            ("gists", "Gists", &gists_btn, &[]),
-            (
-                "search",
-                "Search the repository",
-                &search_btn,
-                &["<Control>f"],
-            ),
-            (
-                "blame",
-                "Blame this file",
-                changes.blame_button(),
-                &["<Control><Shift>b"],
-            ),
-            ("fetch", "Fetch all remotes", &fetch_btn, &["<Control>r"]),
-            (
-                "pull",
-                "Pull from origin",
-                &pull_btn,
-                &["<Control><Shift>p"],
-            ),
-            ("push", "Push to origin", &push_btn, &["<Control>p"]),
-            ("account", "Sign in to GitHub", &account_btn, &[]),
+            ("open", &open_btn),
+            ("stashes", &stash_btn),
+            ("rebase", &rebase_btn),
+            ("worktrees", &worktree_btn),
+            ("reflog", &reflog_btn),
+            ("blame", changes.blame_button()),
+            ("search", &search_btn),
+            ("releases", &releases_btn),
+            ("gists", &gists_btn),
+            ("fetch", &fetch_btn),
+            ("pull", &pull_btn),
+            ("push", &push_btn),
+            ("account", &account_btn),
         ],
     );
     commands.extend(install_page_actions(app, &stack));
@@ -887,12 +858,24 @@ fn github_client() -> Option<std::sync::Arc<github::Client>> {
 /// command whether or not anything displays it.
 fn install_actions(
     app: &adw::Application,
-    entries: &[(&str, &str, &gtk::Button, &[&str])],
+    buttons: &[(&str, &gtk::Button)],
 ) -> Vec<palette::Command> {
     let mut commands = Vec::new();
-    for (name, label, button, accels) in entries {
+
+    for (name, label, accels) in commands::BUTTON_COMMANDS {
+        // A command in the table with no button behind it would install an
+        // action that does nothing — silently, which is precisely how search
+        // shipped broken. Fail at startup instead: this is a wiring mistake,
+        // not a runtime condition, and it is the same on every launch.
+        let button = buttons
+            .iter()
+            .find(|(n, _)| n == name)
+            .map(|(_, b)| (*b).clone())
+            .unwrap_or_else(|| {
+                panic!("command {name:?} is declared in commands::BUTTON_COMMANDS but no button was supplied for it")
+            });
+
         let action = gtk::gio::SimpleAction::new(name, None);
-        let button = (*button).clone();
         action.connect_activate(move |_, _| {
             if button.is_sensitive() {
                 button.emit_clicked();
@@ -902,58 +885,32 @@ fn install_actions(
         if !accels.is_empty() {
             app.set_accels_for_action(&format!("app.{name}"), accels);
         }
+
         commands.push(palette::Command {
             action: (*name).to_string(),
             label: (*label).to_string(),
-            accel: accels.first().map(|a| pretty_accel(a)).unwrap_or_default(),
+            accel: accels
+                .first()
+                .map(|a| commands::pretty_accel(a))
+                .unwrap_or_default(),
         });
     }
+
+    // And the reverse: a button supplied for a command nobody declared is
+    // dead weight that will never be reachable.
+    for (name, _) in buttons {
+        assert!(
+            commands::BUTTON_COMMANDS.iter().any(|(n, _, _)| n == name),
+            "a button was supplied for {name:?}, which is not in commands::BUTTON_COMMANDS"
+        );
+    }
+
     commands
 }
 
-/// Render a GTK accelerator as something a person reads.
-///
-/// `<Control><Shift>p` is how GTK spells it and not how anyone says it.
-fn pretty_accel(accel: &str) -> String {
-    accel
-        .replace("<Control>", "Ctrl+")
-        .replace("<Shift>", "Shift+")
-        .replace("<Alt>", "Alt+")
-        .replace("<Primary>", "Ctrl+")
-        .chars()
-        .enumerate()
-        .map(|(i, c)| {
-            // The final key is a bare letter in GTK's spelling; capitalise it
-            // so "Ctrl+Shift+p" does not read as a typo.
-            if i > 0 && c.is_ascii_lowercase() && accel.ends_with(c) {
-                c.to_ascii_uppercase()
-            } else {
-                c
-            }
-        })
-        .collect()
-}
-
-/// One action per page, so every view is reachable from the keyboard.
-///
-/// Switching to a page that is currently hidden — Conflicts outside a merge,
-/// Pull Requests without a GitHub remote — is a no-op rather than an error:
-/// the shortcut simply does nothing, which is what a disabled menu item would
-/// do.
 fn install_page_actions(app: &adw::Application, stack: &adw::ViewStack) -> Vec<palette::Command> {
     let mut commands = Vec::new();
-    for (i, name) in [
-        "history",
-        "changes",
-        "pulls",
-        "issues",
-        "actions",
-        "inbox",
-        "conflicts",
-    ]
-    .iter()
-    .enumerate()
-    {
+    for (i, name) in commands::PAGES.iter().enumerate() {
         let action_name = format!("page-{name}");
         let action = gtk::gio::SimpleAction::new(&action_name, None);
         let stack = stack.clone();
@@ -969,15 +926,10 @@ fn install_page_actions(app: &adw::Application, stack: &adw::ViewStack) -> Vec<p
         let accel = format!("<Control>{}", i + 1);
         app.set_accels_for_action(&format!("app.{action_name}"), &[&accel]);
 
-        let mut label = format!("Go to {name}");
-        // Title-case the page name so the palette reads as prose.
-        if let Some(first) = label.get(6..7) {
-            label = format!("Go to {}{}", first.to_uppercase(), &name[1..]);
-        }
         commands.push(palette::Command {
             action: action_name,
-            label,
-            accel: pretty_accel(&accel),
+            label: commands::page_label(name),
+            accel: commands::pretty_accel(&accel),
         });
     }
     commands
