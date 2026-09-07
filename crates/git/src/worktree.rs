@@ -52,6 +52,16 @@ pub fn list(repo: &Repo) -> Result<Vec<Worktree>, GitError> {
     Ok(parse_list(&out))
 }
 
+/// Test hook for the parser, which is otherwise private.
+///
+/// Exposed rather than making `parse_list` public: callers should go through
+/// [`list`], and a `#[doc(hidden)]` function keeps that true while letting the
+/// hostile-input tests reach the parser directly.
+#[doc(hidden)]
+pub fn parse_list_for_test(text: &str) -> Vec<Worktree> {
+    parse_list(text)
+}
+
 /// Parse `git worktree list --porcelain`.
 ///
 /// Records are separated by blank lines. `branch` carries a full ref name;
