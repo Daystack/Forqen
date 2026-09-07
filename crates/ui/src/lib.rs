@@ -686,7 +686,7 @@ pub fn build_window(
             let Some(target) = views_.github_target() else {
                 let d = adw::AlertDialog::new(
                     Some("Settings need GitHub"),
-                    Some("This repository has no GitHub remote, or no account is signed in."),
+                    Some(&github_unavailable_reason()),
                 );
                 d.add_response("ok", "OK");
                 d.present(Some(&window_));
@@ -705,7 +705,7 @@ pub fn build_window(
             let Some(target) = views_.github_target() else {
                 let d = adw::AlertDialog::new(
                     Some("Gists need GitHub"),
-                    Some("No account is signed in."),
+                    Some(&github_unavailable_reason()),
                 );
                 d.add_response("ok", "OK");
                 d.present(Some(&window_));
@@ -729,7 +729,7 @@ pub fn build_window(
             let Some(target) = views_.github_target() else {
                 let d = adw::AlertDialog::new(
                     Some("Releases need GitHub"),
-                    Some("This repository has no GitHub remote, or no account is signed in."),
+                    Some(&github_unavailable_reason()),
                 );
                 d.add_response("ok", "OK");
                 d.present(Some(&window_));
@@ -837,23 +837,80 @@ pub fn build_window(
     window
 }
 
-/// Build an API client for the default account, if one is signed in.
+/// Build an API client for the default account.
 ///
-/// Returns `None` when there is no account or the keyring is unreachable —
-/// both mean the GitHub views cannot work, and neither is an error worth
-/// interrupting the user over.
-fn github_client() -> Option<std::sync::Arc<github::Client>> {
-    let store = std::sync::Arc::new(db::Db::open_default().ok()?);
-    let row = store.default_account(auth::DEFAULT_HOST).ok()??;
+/// The failures are not equivalent and must not be reported as one. "No
+/// account" is answered by signing in; "the keyring is locked" is not, and
+/// telling someone to sign in again when their credentials are already stored
+/// and merely unreadable sends them round a loop that cannot terminate.
+pub enum ClientState {
+    Ready(std::sync::Arc<github::Client>),
+    /// Nobody has signed in on this machine.
+    NotSignedIn,
+    /// An account exists but its token could not be read — almost always a
+    /// locked or absent Secret Service.
+    CredentialsUnavailable(String),
+}
+
+impl ClientState {
+    pub fn client(&self) -> Option<std::sync::Arc<github::Client>> {
+        match self {
+            Self::Ready(c) => Some(c.clone()),
+            _ => None,
+        }
+    }
+
+    /// What to tell the user, or `None` when there is nothing wrong.
+    pub fn explanation(&self) -> Option<&str> {
+        match self {
+            Self::Ready(_) => None,
+            Self::NotSignedIn => Some("No account is signed in."),
+            Self::CredentialsUnavailable(_) => Some(
+                "An account is stored but its token could not be read. \
+                 Unlock your keyring — signing in again will not help while \
+                 the Secret Service is unavailable.",
+            ),
+        }
+    }
+}
+
+fn github_client_state() -> ClientState {
+    let Ok(store) = db::Db::open_default() else {
+        // Without the local store there is no account roster to consult, which
+        // is indistinguishable from having no accounts.
+        return ClientState::NotSignedIn;
+    };
+    let store = std::sync::Arc::new(store);
+
+    let row = match store.default_account(auth::DEFAULT_HOST) {
+        Ok(Some(row)) => row,
+        Ok(None) | Err(_) => return ClientState::NotSignedIn,
+    };
+
     let account = auth::Account {
         host: row.host,
         login: row.login,
         is_default_for_host: true,
     };
-    let token = auth::store::load(&account).ok()?;
-    github::Client::new(account, token.access, store)
-        .ok()
-        .map(std::sync::Arc::new)
+
+    let token = match auth::store::load(&account) {
+        Ok(t) => t,
+        // The roster says this account exists, so the token should too. That
+        // it cannot be read is a keyring problem, not an absence of account.
+        Err(e) => {
+            tracing::warn!(error = %e, login = %account.login, "stored token unreadable");
+            return ClientState::CredentialsUnavailable(e.to_string());
+        }
+    };
+
+    match github::Client::new(account, token.access, store) {
+        Ok(c) => ClientState::Ready(std::sync::Arc::new(c)),
+        Err(e) => ClientState::CredentialsUnavailable(e.to_string()),
+    }
+}
+
+fn github_client() -> Option<std::sync::Arc<github::Client>> {
+    github_client_state().client()
 }
 
 /// Register one action per header button, plus its accelerator.
@@ -1233,7 +1290,14 @@ fn wire_selection(selection: &gtk::SingleSelection, state: &AppState, detail: &g
 
         let text = state.with(|s| {
             let end = (index + 1).min(s.window.len());
-            let _ = s.window.ensure(&s.repo, index..end);
+
+            // A failure here means the object could not be read — a corrupt
+            // pack, or a commit that vanished under a concurrent gc. Saying so
+            // beats a blank pane, which reads as "this commit has no message".
+            if let Err(e) = s.window.ensure(&s.repo, index..end) {
+                return Some(format!("Could not read this commit:\n{e}"));
+            }
+
             s.window.row(index).map(|row| {
                 format!(
                     "{}\n\n{} <{}>\n{}",
@@ -1249,4 +1313,17 @@ fn wire_selection(selection: &gtk::SingleSelection, state: &AppState, detail: &g
             detail.set_text(&text);
         }
     });
+}
+
+/// Why the GitHub views are unavailable, in the user's terms.
+///
+/// Distinguishes a missing remote from a missing account from a locked
+/// keyring, because the fix differs for each and a single message sends two
+/// thirds of readers down the wrong path.
+fn github_unavailable_reason() -> String {
+    match github_client_state().explanation() {
+        Some(reason) => reason.to_string(),
+        // Credentials are fine, so the missing piece is the remote.
+        None => "This repository has no GitHub remote.".to_string(),
+    }
 }

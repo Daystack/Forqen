@@ -139,7 +139,6 @@ pub fn present(parent: &impl IsA<gtk::Window>, rt: tokio::runtime::Handle, on_lo
 
             let (tx, rx) = async_channel::bounded(1);
             let host_ = host.clone();
-            let rt_ = rt.clone();
 
             // Stage one: fetch the code pair. Kept separate from polling so the
             // code can be shown the instant it exists rather than after login.
@@ -171,7 +170,6 @@ pub fn present(parent: &impl IsA<gtk::Window>, rt: tokio::runtime::Handle, on_lo
                         let _ = tx_code.send(msg).await;
                     }
                 }
-                let _ = rt_;
             });
 
             let status = status.clone();
