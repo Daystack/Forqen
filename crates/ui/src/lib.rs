@@ -93,34 +93,58 @@ pub fn build_window(
 
     let stash_btn = gtk::Button::from_icon_name("edit-paste-symbolic");
     stash_btn.set_tooltip_text(Some("Stashes"));
-    header.pack_start(&stash_btn);
 
     let rebase_btn = gtk::Button::from_icon_name("view-sort-descending-symbolic");
     rebase_btn.set_tooltip_text(Some("Interactive rebase"));
-    header.pack_start(&rebase_btn);
 
     let worktree_btn = gtk::Button::from_icon_name("view-dual-symbolic");
     worktree_btn.set_tooltip_text(Some("Worktrees"));
-    header.pack_start(&worktree_btn);
 
     let reflog_btn = gtk::Button::from_icon_name("edit-undo-symbolic");
     reflog_btn.set_tooltip_text(Some("History of HEAD — undo anything"));
-    header.pack_start(&reflog_btn);
 
     let search_btn = gtk::Button::from_icon_name("system-search-symbolic");
     search_btn.set_tooltip_text(Some("Search the repository"));
-    header.pack_start(&search_btn);
 
     let releases_btn = gtk::Button::from_icon_name("package-x-generic-symbolic");
     releases_btn.set_tooltip_text(Some("Releases"));
-    header.pack_start(&releases_btn);
 
     let gists_btn = gtk::Button::from_icon_name("text-x-generic-symbolic");
     gists_btn.set_tooltip_text(Some("Gists"));
-    header.pack_start(&gists_btn);
 
     let account_btn = gtk::Button::from_icon_name("avatar-default-symbolic");
     account_btn.set_tooltip_text(Some("Sign in to GitHub"));
+    // Nine buttons did not fit a tiled window, and a toolbar that overflows
+    // hides exactly the commands someone was hunting for. What stays visible
+    // is what gets used constantly — open, and the three transfer operations.
+    // Everything else moves into a menu, which costs nothing to build because
+    // every command is already an action.
+    let menu = gtk::gio::Menu::new();
+
+    let history_section = gtk::gio::Menu::new();
+    history_section.append(Some("Stashes"), Some("app.stashes"));
+    history_section.append(Some("Interactive rebase"), Some("app.rebase"));
+    history_section.append(Some("Worktrees"), Some("app.worktrees"));
+    history_section.append(Some("History of HEAD"), Some("app.reflog"));
+    menu.append_section(None, &history_section);
+
+    let find_section = gtk::gio::Menu::new();
+    find_section.append(Some("Search"), Some("app.search"));
+    find_section.append(Some("Blame this file"), Some("app.blame"));
+    find_section.append(Some("Commands"), Some("app.palette"));
+    menu.append_section(None, &find_section);
+
+    let github_section = gtk::gio::Menu::new();
+    github_section.append(Some("Releases"), Some("app.releases"));
+    github_section.append(Some("Gists"), Some("app.gists"));
+    menu.append_section(None, &github_section);
+
+    let menu_btn = gtk::MenuButton::new();
+    menu_btn.set_icon_name("open-menu-symbolic");
+    menu_btn.set_tooltip_text(Some("Menu"));
+    menu_btn.set_menu_model(Some(&menu));
+    header.pack_end(&menu_btn);
+
     header.pack_end(&account_btn);
 
     // Push is separated from fetch/pull because it is the only one that changes
@@ -855,6 +879,12 @@ fn github_client() -> Option<std::sync::Arc<github::Client>> {
 /// Takes the bindings as data rather than one parameter per button: the list
 /// grows with every command, and a positional signature that long is one
 /// transposed pair away from wiring a shortcut to the wrong action.
+/// Several of these buttons are never packed into the header — they moved into
+/// the menu, and only their actions remain reachable. That works, and is worth
+/// stating because it looks like a leak: `emit_clicked` needs no parent and no
+/// realization, and the clone captured below keeps the button alive for the
+/// life of the action. The button stays the single implementation of its
+/// command whether or not anything displays it.
 fn install_actions(
     app: &adw::Application,
     entries: &[(&str, &str, &gtk::Button, &[&str])],
