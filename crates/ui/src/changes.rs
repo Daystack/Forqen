@@ -47,6 +47,11 @@ pub struct ChangesView {
     diff_title: gtk::Label,
     stage_sel_btn: gtk::Button,
     discard_sel_btn: gtk::Button,
+    blame_btn: gtk::Button,
+    /// Filled in by the window once it knows whether GitHub is reachable, so
+    /// blame can name the pull request a line came from.
+    blame_lookup: RefCell<Option<crate::blame::Lookup>>,
+    rt: RefCell<Option<tokio::runtime::Handle>>,
     message: gtk::TextView,
     commit_btn: gtk::Button,
     amend: gtk::CheckButton,
@@ -95,6 +100,10 @@ impl ChangesView {
         discard_sel_btn.add_css_class("destructive-action");
         discard_sel_btn.set_sensitive(false);
 
+        let blame_btn = gtk::Button::from_icon_name("view-list-ordered-symbolic");
+        blame_btn.set_tooltip_text(Some("Blame this file"));
+        blame_btn.set_sensitive(false);
+
         let paned = build_layout(
             &staged_list,
             &unstaged_list,
@@ -102,6 +111,7 @@ impl ChangesView {
             &diff_title,
             &stage_sel_btn,
             &discard_sel_btn,
+            &blame_btn,
             &message,
             &commit_btn,
             &amend,
@@ -118,6 +128,9 @@ impl ChangesView {
             diff_title,
             stage_sel_btn,
             discard_sel_btn,
+            blame_btn,
+            blame_lookup: RefCell::new(None),
+            rt: RefCell::new(None),
             message,
             commit_btn,
             amend,
@@ -174,6 +187,46 @@ impl ChangesView {
             self.discard_sel_btn
                 .connect_clicked(move |_| this.confirm_discard());
         }
+        {
+            let this = self.clone();
+            self.blame_btn.connect_clicked(move |_| this.show_blame());
+        }
+    }
+
+    /// Give the page what blame needs to name pull requests.
+    pub fn set_blame_context(
+        &self,
+        lookup: Option<crate::blame::Lookup>,
+        rt: tokio::runtime::Handle,
+    ) {
+        *self.blame_lookup.borrow_mut() = lookup;
+        *self.rt.borrow_mut() = Some(rt);
+    }
+
+    /// Exposed so the window can bind a shortcut and an action to it — blame
+    /// is a reading task, and reaching for the mouse to start one is friction.
+    pub fn blame_button(&self) -> &gtk::Button {
+        &self.blame_btn
+    }
+
+    fn show_blame(self: &Rc<Self>) {
+        let Some((_, path)) = self.shown.borrow().clone() else {
+            return;
+        };
+        let Some(rt) = self.rt.borrow().clone() else {
+            return;
+        };
+        let Some(root) = self.root.root().and_downcast::<gtk::Window>() else {
+            return;
+        };
+
+        crate::blame::BlameDialog::present(
+            &root,
+            self.state.clone(),
+            &path,
+            self.blame_lookup.borrow().clone(),
+            rt,
+        );
     }
 
     /// Stage or unstage exactly what is selected in the diff pane.
@@ -430,6 +483,8 @@ impl ChangesView {
 
         self.stage_sel_btn.set_sensitive(false);
         self.discard_sel_btn.set_sensitive(false);
+        // Blame needs only a path, not a line selection.
+        self.blame_btn.set_sensitive(true);
     }
 
     /// Build a diff for an untracked file: all additions, no pre-image.
@@ -550,6 +605,7 @@ fn build_layout(
     diff_title: &gtk::Label,
     stage_sel_btn: &gtk::Button,
     discard_sel_btn: &gtk::Button,
+    blame_btn: &gtk::Button,
     message: &gtk::TextView,
     commit_btn: &gtk::Button,
     amend: &gtk::CheckButton,
@@ -609,6 +665,7 @@ fn build_layout(
     diff_header.set_margin_bottom(6);
     diff_title.set_hexpand(true);
     diff_header.append(diff_title);
+    diff_header.append(blame_btn);
     diff_header.append(discard_sel_btn);
     diff_header.append(stage_sel_btn);
 

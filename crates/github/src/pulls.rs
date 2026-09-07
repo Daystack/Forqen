@@ -192,6 +192,81 @@ impl Client {
     }
 }
 
+const ASSOCIATED_PR_QUERY: &str = r#"
+query($owner:String!, $repo:String!, $sha:GitObjectID!) {
+  repository(owner:$owner, name:$repo) {
+    object(oid:$sha) {
+      ... on Commit {
+        associatedPullRequests(first:5) {
+          nodes { number title url state }
+        }
+      }
+    }
+  }
+}
+"#;
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct AssociatedPull {
+    pub number: u64,
+    pub title: String,
+    pub url: Option<String>,
+    pub state: String,
+}
+
+#[derive(Deserialize)]
+struct AssociatedData {
+    repository: Option<AssociatedRepo>,
+}
+
+#[derive(Deserialize)]
+struct AssociatedRepo {
+    object: Option<AssociatedObject>,
+}
+
+#[derive(Deserialize)]
+struct AssociatedObject {
+    #[serde(rename = "associatedPullRequests")]
+    associated_pull_requests: Option<AssociatedConnection>,
+}
+
+#[derive(Deserialize)]
+struct AssociatedConnection {
+    #[serde(default = "Vec::new")]
+    nodes: Vec<AssociatedPull>,
+}
+
+impl Client {
+    /// Pull requests that introduced a commit.
+    ///
+    /// The question blame actually gets asked: not "who wrote this line" — the
+    /// name is rarely the point — but "why", and the discussion on the pull
+    /// request is where the why lives.
+    ///
+    /// A commit reaching a branch directly belongs to no pull request, which is
+    /// an empty list rather than an error.
+    pub async fn pulls_for_commit(
+        &self,
+        owner: &str,
+        repo: &str,
+        sha: &str,
+    ) -> Result<Vec<AssociatedPull>, GhError> {
+        let data: AssociatedData = self
+            .graphql(
+                ASSOCIATED_PR_QUERY,
+                serde_json::json!({ "owner": owner, "repo": repo, "sha": sha }),
+            )
+            .await?;
+
+        Ok(data
+            .repository
+            .and_then(|r| r.object)
+            .and_then(|o| o.associated_pull_requests)
+            .map(|c| c.nodes)
+            .unwrap_or_default())
+    }
+}
+
 /// Split `owner/name` out of a git remote URL.
 ///
 /// Handles both `https://github.com/o/r.git` and the scp-like
@@ -355,5 +430,43 @@ mod tests {
             serde_json::from_str(r#"{"state":"pending","total_count":0}"#).unwrap();
         assert_eq!(s.state, "pending");
         assert!(s.statuses.is_empty());
+    }
+
+    #[test]
+    fn associated_pull_requests_are_read_from_the_commit() {
+        let data: AssociatedData = serde_json::from_str(
+            r#"{"repository":{"object":{"associatedPullRequests":{"nodes":[
+                 {"number":42,"title":"Fix the thing","url":"https://x/42","state":"MERGED"}]}}}}"#,
+        )
+        .unwrap();
+        let pulls = data
+            .repository
+            .and_then(|r| r.object)
+            .and_then(|o| o.associated_pull_requests)
+            .map(|c| c.nodes)
+            .unwrap_or_default();
+
+        assert_eq!(pulls.len(), 1);
+        assert_eq!(pulls[0].number, 42);
+        assert_eq!(pulls[0].state, "MERGED");
+    }
+
+    #[test]
+    fn a_commit_pushed_straight_to_a_branch_has_no_pull_request() {
+        // Not an error: plenty of commits never went through a pull request.
+        for json in [
+            r#"{"repository":{"object":{"associatedPullRequests":{"nodes":[]}}}}"#,
+            r#"{"repository":{"object":null}}"#,
+            r#"{"repository":null}"#,
+        ] {
+            let data: AssociatedData = serde_json::from_str(json).unwrap();
+            let pulls = data
+                .repository
+                .and_then(|r| r.object)
+                .and_then(|o| o.associated_pull_requests)
+                .map(|c| c.nodes)
+                .unwrap_or_default();
+            assert!(pulls.is_empty(), "input: {json}");
+        }
     }
 }

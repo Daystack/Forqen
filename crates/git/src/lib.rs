@@ -12,6 +12,7 @@
 //! Shelling out is both more correct and cheaper in memory, since the child
 //! process's heap dies with the child.
 
+pub mod blame;
 pub mod branch;
 pub mod commit;
 pub mod diff;

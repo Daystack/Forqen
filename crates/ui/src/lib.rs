@@ -6,6 +6,7 @@
 //! returns over an `async_channel`.
 
 pub mod actions;
+pub mod blame;
 pub mod changes;
 pub mod commit_list;
 pub mod conflicts;
@@ -423,6 +424,8 @@ pub fn build_window(
         issues: issues_view.clone(),
         actions_page: actions_page.clone(),
         actions: actions_view.clone(),
+        changes: changes.clone(),
+        rt: rt.clone(),
     };
 
     {
@@ -568,6 +571,7 @@ pub fn build_window(
             ("rebase", &rebase_btn, &["<Control><Shift>r"]),
             ("worktrees", &worktree_btn, &["<Control><Shift>w"]),
             ("reflog", &reflog_btn, &["<Control><Shift>z"]),
+            ("blame", changes.blame_button(), &["<Control><Shift>b"]),
             ("fetch", &fetch_btn, &["<Control>r"]),
             ("pull", &pull_btn, &["<Control><Shift>p"]),
             ("push", &push_btn, &["<Control>p"]),
@@ -812,6 +816,8 @@ struct Views {
     issues: Rc<issues::IssuesView>,
     actions_page: adw::ViewStackPage,
     actions: Rc<actions::ActionsView>,
+    changes: Rc<changes::ChangesView>,
+    rt: tokio::runtime::Handle,
 }
 
 impl Views {
@@ -856,6 +862,17 @@ impl Views {
         self.issues_page.set_visible(available);
         self.actions.set_target(target.clone());
         self.actions_page.set_visible(available);
+
+        // Blame can name the pull request a line came from, when there is a
+        // GitHub remote to ask. Without one it still works, minus that column.
+        self.changes.set_blame_context(
+            target.map(|t| blame::Lookup {
+                owner: t.owner,
+                repo: t.repo,
+                client: t.client,
+            }),
+            self.rt.clone(),
+        );
 
         // The inbox needs only an account, not a GitHub remote — it is shown
         // whenever there is a client to ask, even in a repository hosted
