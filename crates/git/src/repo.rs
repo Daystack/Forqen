@@ -94,6 +94,22 @@ pub(crate) mod tests {
             .unwrap();
         assert!(ok.status.success(), "git init failed");
 
+        // Identity in the repository config, not only the environment.
+        // fast-import and rebase spawn further git processes that do not
+        // inherit GIT_AUTHOR_*, so a machine with no global identity — every
+        // CI runner — fails where a developer's machine quietly succeeds.
+        for (key, value) in [
+            ("user.name", "Fixture"),
+            ("user.email", "fixture@example.invalid"),
+        ] {
+            let ok = Command::new("git")
+                .args(["config", key, value])
+                .current_dir(p)
+                .output()
+                .unwrap();
+            assert!(ok.status.success(), "git config {key} failed");
+        }
+
         if n == 0 {
             return dir;
         }

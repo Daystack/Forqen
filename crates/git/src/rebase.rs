@@ -494,6 +494,13 @@ mod tests {
             assert!(ok.status.success(), "git {args:?} failed");
         };
         run(&["init", "-q", "-b", "main"]);
+        // Identity goes in the repository config, not the environment.
+        // `git rebase` spawns its own git subprocesses, and those do not
+        // inherit GIT_AUTHOR_* from this process — on a machine with no global
+        // identity (every CI runner) the rebase then stops with "Committer
+        // identity unknown" while the same test passes locally.
+        run(&["config", "user.name", "Fixture"]);
+        run(&["config", "user.email", "fixture@example.invalid"]);
         for i in 0..n {
             let name = format!("f{i}.txt");
             std::fs::write(p.join(&name), format!("{i}\n")).unwrap();
