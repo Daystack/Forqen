@@ -169,6 +169,41 @@ impl Plan {
     }
 }
 
+/// Pick a sensible base to rebase onto.
+///
+/// The upstream when the branch has one — the commits above it are the unpushed
+/// ones, and therefore the ones it is safe to rewrite. Otherwise the last few
+/// commits, clamped to what actually exists: `HEAD~10` on a five-commit
+/// repository does not resolve, and the dialog then opens onto an error for
+/// the most ordinary case there is, a young repository.
+///
+/// Returns `None` when there is nothing to rebase — fewer than two commits, so
+/// no commit has a parent to replay onto.
+pub fn default_base(repo: &Repo, max_depth: usize) -> Option<String> {
+    if let Ok(Some(upstream)) = crate::branch::upstream_of_head(repo) {
+        return Some(upstream);
+    }
+
+    let workdir = repo.workdir().unwrap_or_else(|| repo.git_dir());
+    let out = Command::new("git")
+        .arg("-C")
+        .arg(workdir)
+        .args(["rev-list", "--count", "HEAD"])
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+
+    let count: usize = String::from_utf8_lossy(&out.stdout).trim().parse().ok()?;
+    // One commit has no parent to rebase onto; the root cannot be replayed
+    // without `--root`, which is not a safe default.
+    if count < 2 {
+        return None;
+    }
+    Some(format!("HEAD~{}", max_depth.min(count - 1)))
+}
+
 /// Outcome of starting a rebase.
 #[derive(Debug, PartialEq, Eq)]
 pub enum Outcome {
@@ -575,6 +610,65 @@ mod tests {
         assert!(
             !in_progress(&repo),
             "refusing early is the point — git would have left state to clean up"
+        );
+    }
+
+    #[test]
+    fn the_default_base_is_clamped_to_the_commits_that_exist() {
+        // HEAD~10 on a five-commit repository does not resolve, and the editor
+        // then opens onto an error for the most ordinary case there is.
+        let dir = independent(5);
+        let repo = crate::Repo::open(dir.path()).unwrap();
+        assert_eq!(default_base(&repo, 10).as_deref(), Some("HEAD~4"));
+        assert_eq!(default_base(&repo, 2).as_deref(), Some("HEAD~2"));
+    }
+
+    #[test]
+    fn a_clamped_base_actually_resolves() {
+        let dir = independent(3);
+        let repo = crate::Repo::open(dir.path()).unwrap();
+        let base = default_base(&repo, 10).unwrap();
+        let plan = Plan::from_range(&repo, &base).expect("the chosen base must resolve");
+        assert_eq!(plan.steps.len(), 2);
+    }
+
+    #[test]
+    fn a_single_commit_repository_has_nothing_to_rebase() {
+        let dir = independent(1);
+        let repo = crate::Repo::open(dir.path()).unwrap();
+        assert_eq!(
+            default_base(&repo, 10),
+            None,
+            "the root commit has no parent to replay onto"
+        );
+    }
+
+    #[test]
+    fn an_upstream_wins_over_the_depth_fallback() {
+        let remote = tempfile::tempdir().unwrap();
+        Command::new("git")
+            .args(["init", "-q", "--bare"])
+            .arg(remote.path())
+            .output()
+            .unwrap();
+
+        let dir = independent(3);
+        let run = |args: &[&str]| {
+            Command::new("git")
+                .arg("-C")
+                .arg(dir.path())
+                .args(args)
+                .output()
+                .unwrap()
+        };
+        run(&["remote", "add", "origin", remote.path().to_str().unwrap()]);
+        assert!(run(&["push", "-u", "origin", "main"]).status.success());
+
+        let repo = crate::Repo::open(dir.path()).unwrap();
+        assert_eq!(
+            default_base(&repo, 10).as_deref(),
+            Some("origin/main"),
+            "unpushed work is the safe thing to rewrite"
         );
     }
 }

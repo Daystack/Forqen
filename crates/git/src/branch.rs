@@ -189,6 +189,35 @@ fn run(repo: &Repo, args: &[&str]) -> Result<(), GitError> {
     Ok(())
 }
 
+/// The upstream tracking ref of the current branch, if it has one.
+///
+/// Used to pick a sensible rebase base: the commits above the upstream are the
+/// ones not yet pushed, and therefore the ones it is safe to rewrite. A branch
+/// with no upstream returns `None` rather than guessing — offering to rewrite
+/// an entire history because nothing was configured is not a helpful default.
+pub fn upstream_of_head(repo: &Repo) -> Result<Option<String>, GitError> {
+    let workdir = repo.workdir().unwrap_or_else(|| repo.git_dir());
+    let out = std::process::Command::new("git")
+        .arg("-C")
+        .arg(workdir)
+        .args([
+            "rev-parse",
+            "--abbrev-ref",
+            "--symbolic-full-name",
+            "@{upstream}",
+        ])
+        .output()?;
+
+    // Exit 128 with "no upstream configured" is the ordinary case for a local
+    // branch, not an error worth propagating.
+    if !out.status.success() {
+        return Ok(None);
+    }
+
+    let name = String::from_utf8_lossy(&out.stdout).trim().to_string();
+    Ok((!name.is_empty()).then_some(name))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -345,5 +374,45 @@ mod tests {
         let dir = fixture(1);
         let repo = Repo::open(dir.path()).unwrap();
         assert_eq!(operation_in_progress(&repo), None);
+    }
+
+    #[test]
+    fn a_branch_with_no_upstream_reports_none_rather_than_erroring() {
+        let dir = fixture(2);
+        let repo = Repo::open(dir.path()).unwrap();
+        assert_eq!(
+            upstream_of_head(&repo).unwrap(),
+            None,
+            "a purely local branch has no upstream; that is ordinary, not a failure"
+        );
+    }
+
+    #[test]
+    fn a_tracking_branch_reports_its_upstream() {
+        let remote = tempfile::tempdir().unwrap();
+        std::process::Command::new("git")
+            .args(["init", "-q", "--bare"])
+            .arg(remote.path())
+            .output()
+            .unwrap();
+
+        let dir = fixture(2);
+        let run = |args: &[&str]| {
+            std::process::Command::new("git")
+                .arg("-C")
+                .arg(dir.path())
+                .args(args)
+                .output()
+                .unwrap()
+        };
+        run(&["remote", "add", "origin", remote.path().to_str().unwrap()]);
+        let out = run(&["push", "-u", "origin", "main"]);
+        assert!(out.status.success(), "seeding the upstream failed");
+
+        let repo = Repo::open(dir.path()).unwrap();
+        assert_eq!(
+            upstream_of_head(&repo).unwrap().as_deref(),
+            Some("origin/main")
+        );
     }
 }

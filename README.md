@@ -33,7 +33,7 @@ RSS growth exceeds 64MB. Current measurement: **12MB**.
 
 ## Status
 
-R0 through R3 complete. 208 tests.
+R0 through R3 complete, R4 started. 232 tests.
 
 **Engine — all tested against real repositories:**
 windowed history over large repositories · refs · working-tree status ·
@@ -80,8 +80,13 @@ failing run and its failing job are preselected, and each job names its
 failing step — the question a CI page is opened to answer is "what broke".
 Failed jobs can be re-run and running ones cancelled.
 
-**Not built:** interactive rebase, worktrees, reflog, search, releases.
-See `PLAN.md`.
+An interactive rebase editor drives `git rebase -i` through
+`GIT_SEQUENCE_EDITOR`: reorder with the keyboard, choose pick/reword/edit/
+squash/fixup/drop per commit, and continue, skip or abort when it stops.
+Invalid plans are refused before git starts, rather than after it has left a
+rebase in progress.
+
+**Not built:** worktrees, reflog, search, releases. See `PLAN.md`.
 
 **Needs setup before browser sign-in works:** the binary ships a placeholder
 GitHub App id. Register an App and rebuild with `FORQEN_CLIENT_ID=<id>`, or use
@@ -187,7 +192,7 @@ for the keyring, and git itself is bundled as a module because
 ## Testing
 
 ```bash
-cargo test --workspace                       # 208 tests
+cargo test --workspace                       # 232 tests
 cargo test -p git -p auth -p db -p github    # 149 of them, no display server needed
 cargo test -p git --test memcheck --release  # the memory gate
 cargo test -p auth -- --ignored              # keyring round trip, needs a session bus

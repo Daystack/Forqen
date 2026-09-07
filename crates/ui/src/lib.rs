@@ -14,6 +14,7 @@ pub mod inbox;
 pub mod issues;
 pub mod login;
 pub mod pulls;
+pub mod rebase;
 pub mod review;
 pub mod settings;
 pub mod stash;
@@ -86,6 +87,10 @@ pub fn build_window(
     let stash_btn = gtk::Button::from_icon_name("edit-paste-symbolic");
     stash_btn.set_tooltip_text(Some("Stashes"));
     header.pack_start(&stash_btn);
+
+    let rebase_btn = gtk::Button::from_icon_name("view-sort-descending-symbolic");
+    rebase_btn.set_tooltip_text(Some("Interactive rebase"));
+    header.pack_start(&rebase_btn);
 
     let account_btn = gtk::Button::from_icon_name("avatar-default-symbolic");
     account_btn.set_tooltip_text(Some("Sign in to GitHub"));
@@ -547,12 +552,15 @@ pub fn build_window(
     // on the session bus, which is how they can be driven without a pointer.
     install_actions(
         app,
-        &open_btn,
-        &stash_btn,
-        &fetch_btn,
-        &pull_btn,
-        &push_btn,
-        &account_btn,
+        &[
+            ("open", &open_btn, &["<Control>o"]),
+            ("stashes", &stash_btn, &["<Control><Shift>s"]),
+            ("rebase", &rebase_btn, &["<Control><Shift>r"]),
+            ("fetch", &fetch_btn, &["<Control>r"]),
+            ("pull", &pull_btn, &["<Control><Shift>p"]),
+            ("push", &push_btn, &["<Control>p"]),
+            ("account", &account_btn, &[]),
+        ],
     );
     install_page_actions(app, &stack);
 
@@ -566,6 +574,39 @@ pub fn build_window(
                 views_inner.state.clone(),
                 // Stashing and popping both rewrite the working tree, so every
                 // view of it has to catch up.
+                Rc::new(move || {
+                    if let Some(Some(path)) = views_inner
+                        .state
+                        .with(|s| s.repo.workdir().map(|p| p.to_path_buf()))
+                    {
+                        views_inner.load_repo(&path);
+                    }
+                }),
+            );
+        });
+    }
+
+    {
+        let views_ = views.clone();
+        let window_ = window.clone();
+        rebase_btn.connect_clicked(move |_| {
+            let views_inner = views_.clone();
+
+            // Upstream when there is one — the unpushed commits are the ones
+            // safe to rewrite — otherwise the last few, clamped to what
+            // exists. Picking the base is engine logic, and it is tested there.
+            let Some(onto) = views_inner
+                .state
+                .with(|s| git::rebase::default_base(&s.repo, 10))
+                .flatten()
+            else {
+                return;
+            };
+
+            rebase::RebaseDialog::present(
+                &window_,
+                views_inner.state.clone(),
+                &onto,
                 Rc::new(move || {
                     if let Some(Some(path)) = views_inner
                         .state
@@ -616,27 +657,13 @@ fn github_client() -> Option<std::sync::Arc<github::Client>> {
 /// The actions activate the buttons rather than duplicating their handlers, so
 /// there is exactly one implementation of each command and a disabled button
 /// disables its shortcut for free.
-fn install_actions(
-    app: &adw::Application,
-    open_btn: &gtk::Button,
-    stash_btn: &gtk::Button,
-    fetch_btn: &gtk::Button,
-    pull_btn: &gtk::Button,
-    push_btn: &gtk::Button,
-    account_btn: &gtk::Button,
-) {
-    let entries: [(&str, &gtk::Button, &[&str]); 6] = [
-        ("open", open_btn, &["<Control>o"]),
-        ("stashes", stash_btn, &["<Control><Shift>s"]),
-        ("fetch", fetch_btn, &["<Control>r"]),
-        ("pull", pull_btn, &["<Control><Shift>p"]),
-        ("push", push_btn, &["<Control>p"]),
-        ("account", account_btn, &[]),
-    ];
-
+/// Takes the bindings as data rather than one parameter per button: the list
+/// grows with every command, and a positional signature that long is one
+/// transposed pair away from wiring a shortcut to the wrong action.
+fn install_actions(app: &adw::Application, entries: &[(&str, &gtk::Button, &[&str])]) {
     for (name, button, accels) in entries {
         let action = gtk::gio::SimpleAction::new(name, None);
-        let button = button.clone();
+        let button = (*button).clone();
         action.connect_activate(move |_, _| {
             if button.is_sensitive() {
                 button.emit_clicked();
