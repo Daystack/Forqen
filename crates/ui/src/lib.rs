@@ -20,6 +20,7 @@ pub mod settings;
 pub mod stash;
 pub mod state;
 pub mod sync;
+pub mod worktrees;
 
 use std::cell::RefCell;
 use std::path::Path;
@@ -91,6 +92,10 @@ pub fn build_window(
     let rebase_btn = gtk::Button::from_icon_name("view-sort-descending-symbolic");
     rebase_btn.set_tooltip_text(Some("Interactive rebase"));
     header.pack_start(&rebase_btn);
+
+    let worktree_btn = gtk::Button::from_icon_name("view-dual-symbolic");
+    worktree_btn.set_tooltip_text(Some("Worktrees"));
+    header.pack_start(&worktree_btn);
 
     let account_btn = gtk::Button::from_icon_name("avatar-default-symbolic");
     account_btn.set_tooltip_text(Some("Sign in to GitHub"));
@@ -556,6 +561,7 @@ pub fn build_window(
             ("open", &open_btn, &["<Control>o"]),
             ("stashes", &stash_btn, &["<Control><Shift>s"]),
             ("rebase", &rebase_btn, &["<Control><Shift>r"]),
+            ("worktrees", &worktree_btn, &["<Control><Shift>w"]),
             ("fetch", &fetch_btn, &["<Control>r"]),
             ("pull", &pull_btn, &["<Control><Shift>p"]),
             ("push", &push_btn, &["<Control>p"]),
@@ -574,6 +580,28 @@ pub fn build_window(
                 views_inner.state.clone(),
                 // Stashing and popping both rewrite the working tree, so every
                 // view of it has to catch up.
+                Rc::new(move || {
+                    if let Some(Some(path)) = views_inner
+                        .state
+                        .with(|s| s.repo.workdir().map(|p| p.to_path_buf()))
+                    {
+                        views_inner.load_repo(&path);
+                    }
+                }),
+            );
+        });
+    }
+
+    {
+        let views_ = views.clone();
+        let window_ = window.clone();
+        worktree_btn.connect_clicked(move |_| {
+            let views_inner = views_.clone();
+            worktrees::WorktreeDialog::present(
+                &window_,
+                views_inner.state.clone(),
+                // Adding or removing a worktree changes the branch list — a
+                // branch checked out elsewhere cannot be checked out here.
                 Rc::new(move || {
                     if let Some(Some(path)) = views_inner
                         .state
