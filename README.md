@@ -28,8 +28,29 @@ hardware. That was an honest miss in planning: the budget was set without
 measuring what an empty GTK4 window costs.
 
 The part forqen controls is gated in CI. `crates/git/tests/memcheck.rs` walks
-and scrolls a 20,000-commit history in both directions and fails the build if
-RSS growth exceeds 64MB. Current measurement: **12MB**.
+and scrolls a 20,000-commit synthetic history in both directions and fails the
+build if RSS growth exceeds 64MB. Current measurement: **12MB**.
+
+That fixture is synthetic, so the claims were also checked against a real
+repository — git.git, 82,154 commits and 318MB of history:
+
+| | |
+|---|---|
+| Scrolling the entire history | **+1.6 MB** |
+| Walking it, no commit-graph | 543 ms, +63 MB |
+| Walking it, with a commit-graph | **30 ms, +3.8 MB** |
+| Total RSS | ~68 MB |
+
+The first row is the design claim: the spine holds 1.6MB of commit ids and the
+realized rows never exceed their budget of 512, so scrolling 82,000 commits
+costs what scrolling 82 costs. The total is dominated by gix's packfile
+mappings and object cache, which scale with the size of the repository rather
+than with anything forqen retains — which is also why the synthetic gate's
+ceiling does not apply to real repositories, and why they are measured
+separately in `large_repository.rs`.
+
+The commit-graph row is why forqen writes one in the background the first time
+it opens a repository that has none.
 
 ## Status
 
