@@ -98,7 +98,12 @@ jobs:
       - name: Install flatpak and the builder
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends flatpak flatpak-builder
+          # elfutils supplies eu-strip, which flatpak-builder runs to split
+          # debuginfo out of every binary. It is present on most desktops and
+          # absent on GitHub runners, where the build otherwise gets all the
+          # way through compiling git and then dies on a missing executable.
+          sudo apt-get install -y --no-install-recommends \
+            flatpak flatpak-builder elfutils
           flatpak remote-add --if-not-exists --user \
             flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
