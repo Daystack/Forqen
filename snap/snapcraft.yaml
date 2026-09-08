@@ -63,9 +63,8 @@ parts:
     meson-parameters:
       - --prefix=/usr
       - -Dprofile=release
-    build-snaps:
-      - rustup
     build-packages:
+      - curl
       - libgtk-4-dev
       - libadwaita-1-dev
       - libgtksourceview-5-dev
@@ -74,9 +73,16 @@ parts:
       - git
     override-build: |
       # core24 is Ubuntu 24.04, whose archive rustc is older than this
-      # workspace's rust-version. Pin the toolchain rather than depending on
-      # whatever the base happens to ship.
-      rustup default 1.97.0
+      # workspace's rust-version, so the toolchain has to come from elsewhere.
+      #
+      # Not the rustup snap: the gnome extension puts the GNOME SDK's libc on
+      # LD_LIBRARY_PATH for the build, the rustup snap is linked against a
+      # different one, and it dies on an undefined GLIBC_PRIVATE symbol before
+      # running a single command. Installing the toolchain into the build
+      # environment itself has no such clash.
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+        | sh -s -- -y --no-modify-path --profile minimal --default-toolchain 1.97.0
+      export PATH="$HOME/.cargo/bin:$PATH"
       craftctl default
 
   # forqen drives the git binary for rebase, signed commits, hook-running
