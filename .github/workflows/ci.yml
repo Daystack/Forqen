@@ -82,29 +82,74 @@ jobs:
   # No container image: bilelmoussaoui/flatpak-github-actions publishes tags up
   # to gnome-47, and this manifest targets runtime 50, so flatpak is installed
   # on the runner instead and the SDK comes from flathub.
+  # Packaging is validated on every push to main, not only at release.
+  #
+  # It broke four separate ways the first time it was run for real — a runtime
+  # version that did not exist, git failing to compile under GCC 15, no
+  # vendored crates in a sandbox with no network, and an AppStream step that
+  # could not read an SVG-only icon. None of those were visible from the Rust
+  # build. Finding them at tag time would mean finding them under pressure.
   flatpak:
     name: flatpak
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install flatpak
+      - name: Install flatpak and the builder
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends flatpak flatpak-builder
           flatpak remote-add --if-not-exists --user \
             flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
+      # The SDK and platform are ~1.5GB and change only when the manifest
+      # pins a new runtime, so they are keyed on the manifest itself.
+      - name: Cache the flatpak installation
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/flatpak
+          key: flatpak-runtimes-${{ hashFiles('build-aux/io.github.forqen.Forqen.yml') }}
+          restore-keys: flatpak-runtimes-
+
+      - name: Install the runtime, SDK and rust extension
+        run: |
+          flatpak install --user --noninteractive --no-static-deltas flathub \
+            org.gnome.Platform//50 \
+            org.gnome.Sdk//50 \
+            org.freedesktop.Sdk.Extension.rust-stable//25.08
+
       - uses: dtolnay/rust-toolchain@stable
 
-      # vendor/ is gitignored — 437MB has no business in the repository — so it
-      # is regenerated here. The build sandbox has no network, so without this
-      # cargo cannot resolve a single dependency.
+      # vendor/ is gitignored — 437MB has no business in the repository — and
+      # the build sandbox has no network, so without this cargo cannot resolve
+      # a single dependency.
       - name: Vendor crates for the offline sandbox
         run: cargo vendor --versioned-dirs vendor
 
-      - name: Build
+      # Incremental across runs: git and the crate tree only rebuild when the
+      # manifest or the sources they come from change.
+      - name: Cache the build state
+        uses: actions/cache@v4
+        with:
+          path: .flatpak-builder
+          key: flatpak-build-${{ hashFiles('build-aux/**', 'Cargo.lock') }}
+          restore-keys: flatpak-build-
+
+      - name: Build into a local repository
         run: |
-          flatpak-builder --user --install-deps-from=flathub --force-clean \
-            build build-aux/io.github.forqen.Forqen.yml
+          flatpak-builder --user --force-clean --disable-rofiles-fuse \
+            --repo=repo build build-aux/io.github.forqen.Forqen.yml
+
+      # A bundle anyone can download from the run and install with
+      # `flatpak install forqen.flatpak` — the thing that proves packaging
+      # actually produced something installable.
+      - name: Export a bundle
+        run: |
+          flatpak build-bundle repo forqen.flatpak io.github.forqen.Forqen master
+          ls -lh forqen.flatpak
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forqen-flatpak
+          path: forqen.flatpak
+          retention-days: 14
