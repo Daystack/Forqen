@@ -17,6 +17,7 @@ pub mod inbox;
 pub mod issues;
 pub mod login;
 pub mod palette;
+pub mod preferences;
 pub mod pulls;
 pub mod rebase;
 pub mod reflog;
@@ -28,6 +29,7 @@ pub mod settings;
 pub mod stash;
 pub mod state;
 pub mod sync;
+pub mod theme;
 pub mod worktrees;
 
 use std::cell::RefCell;
@@ -59,7 +61,7 @@ pub fn build_window(
 ) -> adw::ApplicationWindow {
     let state = AppState::new();
     let prefs = settings::open();
-    load_css();
+    apply_appearance(prefs.as_ref());
 
     let window = adw::ApplicationWindow::builder()
         .application(app)
@@ -107,6 +109,7 @@ pub fn build_window(
 
     let settings_btn =
         crate::commands::icon_button("emblem-system-symbolic", "Repository settings");
+    let prefs_btn = crate::commands::icon_button("preferences-system-symbolic", "Preferences");
 
     let gists_btn = crate::commands::icon_button("text-x-generic-symbolic", "Gists");
 
@@ -135,6 +138,10 @@ pub fn build_window(
     github_section.append(Some("Releases"), Some("app.releases"));
     github_section.append(Some("Gists"), Some("app.gists"));
     github_section.append(Some("Repository settings"), Some("app.repo-settings"));
+
+    let app_section = gtk::gio::Menu::new();
+    app_section.append(Some("Preferences"), Some("app.preferences"));
+    menu.append_section(None, &app_section);
     menu.append_section(None, &github_section);
 
     let menu_btn = gtk::MenuButton::new();
@@ -612,6 +619,7 @@ pub fn build_window(
             ("releases", &releases_btn),
             ("gists", &gists_btn),
             ("repo-settings", &settings_btn),
+            ("preferences", &prefs_btn),
             ("fetch", &fetch_btn),
             ("pull", &pull_btn),
             ("push", &push_btn),
@@ -674,6 +682,21 @@ pub fn build_window(
                     stack_inner.set_visible_child_name("changes");
                     changes_inner.reveal_path(path);
                 }),
+            );
+        });
+    }
+
+    {
+        let window_ = window.clone();
+        let prefs_ = prefs.clone();
+        prefs_btn.connect_clicked(move |_| {
+            let prefs_inner = prefs_.clone();
+            preferences::present(
+                &window_,
+                prefs_.clone(),
+                // Restyle on every selection so the change shows under the
+                // open dialog rather than only after it closes.
+                Rc::new(move || apply_appearance(prefs_inner.as_ref())),
             );
         });
     }
@@ -1011,17 +1034,61 @@ fn install_page_actions(app: &adw::Application, stack: &adw::ViewStack) -> Vec<p
 /// `APPLICATION` priority sits above the theme but below user overrides in
 /// `~/.config/gtk-4.0/gtk.css`, so a user who wants different diff colours can
 /// still have them.
-fn load_css() {
-    let provider = gtk::CssProvider::new();
-    provider.load_from_string(diff_view::CSS);
+/// The one provider the application styles through.
+///
+/// Held for the process lifetime and reloaded in place rather than adding a
+/// second provider per theme change: stacking providers means the old palette
+/// keeps applying wherever the new one happens not to override it, which shows
+/// up as a headerbar from one theme above a list from another.
+fn style_provider() -> &'static gtk::CssProvider {
+    use std::sync::OnceLock;
+    static PROVIDER: OnceLock<SendProvider> = OnceLock::new();
 
-    if let Some(display) = gtk::gdk::Display::default() {
-        gtk::style_context_add_provider_for_display(
-            &display,
-            &provider,
-            gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
-        );
+    // The provider only ever leaves this cell on the main loop, where GTK
+    // objects are legal; the wrapper exists to satisfy the OnceLock bound.
+    struct SendProvider(gtk::CssProvider);
+    unsafe impl Send for SendProvider {}
+    unsafe impl Sync for SendProvider {}
+
+    &PROVIDER
+        .get_or_init(|| {
+            let provider = gtk::CssProvider::new();
+            if let Some(display) = gtk::gdk::Display::default() {
+                gtk::style_context_add_provider_for_display(
+                    &display,
+                    &provider,
+                    gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+                );
+            }
+            SendProvider(provider)
+        })
+        .0
+}
+
+/// Apply the theme, typeface and density currently in settings.
+///
+/// Called at startup and again on every preference change, so the window
+/// restyles under an open preferences dialog.
+pub fn apply_appearance(prefs: Option<&gtk::gio::Settings>) {
+    let (theme_choice, font, density) = preferences::current(prefs);
+
+    // Lane is drawn dark-first, so ask libadwaita for the matching scheme
+    // rather than letting a light desktop wash it out.
+    if let Some(style) = adw::StyleManager::default().into() {
+        let manager: adw::StyleManager = style;
+        manager.set_color_scheme(if theme_choice.prefers_dark() {
+            adw::ColorScheme::ForceDark
+        } else {
+            adw::ColorScheme::ForceLight
+        });
     }
+
+    let css = format!(
+        "{}\n{}",
+        theme::stylesheet(theme_choice, font, density),
+        diff_view::CSS
+    );
+    style_provider().load_from_string(&css);
 }
 
 /// The widgets a repository load has to touch.

@@ -33,7 +33,18 @@ fn icon_buttons_go_through_the_labelling_helper() {
 
         let text = std::fs::read_to_string(&path).expect("read");
         for (i, line) in text.lines().enumerate() {
-            if !line.contains("from_icon_name") && !line.contains("set_icon_name") {
+            // `from_icon_name` always constructs an icon-only button. But
+            // `set_icon_name` also exists on widgets that carry their own
+            // visible label — a PreferencesPage, a StackPage — where the icon
+            // is decoration beside text and needs no separate label. Only
+            // flag it when the receiver looks like a button.
+            let constructs_icon_button = line.contains("Button::from_icon_name");
+            let sets_button_icon = line.contains("set_icon_name")
+                && line.split(".set_icon_name").next().is_some_and(|recv| {
+                    let r = recv.trim().to_lowercase();
+                    r.ends_with("_btn") || r.ends_with("button") || r.ends_with("toggle")
+                });
+            if !constructs_icon_button && !sets_button_icon {
                 continue;
             }
             // An explicit accessible Property::Label nearby is equally valid —

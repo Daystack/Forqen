@@ -65,5 +65,50 @@
       </description>
     </key>
 
+
+    <key name="theme" type="s">
+      <choices>
+        <choice value="forge"/>
+        <choice value="lane"/>
+        <choice value="ledger"/>
+      </choices>
+      <default>'forge'</default>
+      <summary>Visual theme</summary>
+      <description>
+        Forge is the shipped default: cold metal with one hot accent. Lane is
+        drawn dark-first and uses colour only to identify branches. Ledger sets
+        history as a written record, on warm paper.
+      </description>
+    </key>
+
+    <key name="ui-font" type="s">
+      <choices>
+        <choice value="plex"/>
+        <choice value="atkinson"/>
+        <choice value="system"/>
+      </choices>
+      <default>'plex'</default>
+      <summary>Interface typeface</summary>
+      <description>
+        IBM Plex is bundled with the application and is always available.
+        Atkinson Hyperlegible is offered only when it is installed, since a
+        missing family falls back silently and would look like nothing
+        happened.
+      </description>
+    </key>
+
+    <key name="density" type="s">
+      <choices>
+        <choice value="tight"/>
+        <choice value="default"/>
+        <choice value="roomy"/>
+      </choices>
+      <default>'default'</default>
+      <summary>Row density</summary>
+      <description>
+        How tightly list rows are packed. Affects every list at once rather
+        than each view separately.
+      </description>
+    </key>
   </schema>
 </schemalist>

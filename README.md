@@ -145,6 +145,27 @@ are spelled out.
 GitHub App id. Register an App and rebuild with `FORQEN_CLIENT_ID=<id>`, or use
 the `gh` CLI import path, which works today.
 
+## Appearance
+
+Three complete visual systems ship, each a full palette, corner radius and
+type pairing rather than a recolouring of one theme:
+
+| | |
+|---|---|
+| **Forge** *(default)* | Cold metal with one hot copper accent. Warmth marks state. |
+| **Lane** | Dark-first. Colour identifies a branch and does nothing else. |
+| **Ledger** | Warm paper, near-square corners, rules instead of shadows. |
+
+IBM Plex Sans and Plex Mono are **bundled** rather than assumed present — none
+of the candidate families were installed on the development machine, and a
+missing family in GTK falls back silently, so an interface that quietly
+rendered in something else would look like nothing had happened. Other
+typefaces appear in Preferences only when fontconfig can actually resolve
+them, and the dialog names the ones it cannot.
+
+Theme, typeface and row density are in Preferences (`Ctrl+,`) and apply as
+they are selected, so the window restyles underneath the open dialog.
+
 ## Architecture
 
 ```

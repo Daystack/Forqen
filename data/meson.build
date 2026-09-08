@@ -67,6 +67,29 @@ endforeach
 # nested sandbox works, or once the runtime ships a loader that does not need
 # one.
 
+# --- bundled fonts ---------------------------------------------------------
+# IBM Plex ships with the application rather than being assumed present.
+# None of the proposed families were installed on the development machine, and
+# a missing family in GTK falls back silently — the interface would simply
+# render in something else with nothing to say why. Installed under the app's
+# own directory so fontconfig finds it without touching the user's fonts.
+install_data(
+  [
+    'fonts/IBMPlexSans-Regular.ttf',
+    'fonts/IBMPlexSans-Medium.ttf',
+    'fonts/IBMPlexSans-SemiBold.ttf',
+    'fonts/IBMPlexMono-Regular.ttf',
+    'fonts/IBMPlexMono-Medium.ttf',
+  ],
+  install_dir: datadir / 'fonts' / 'forqen',
+)
+
+# The OFL requires the licence to travel with the fonts.
+install_data(
+  'fonts/OFL.txt',
+  install_dir: datadir / 'fonts' / 'forqen',
+)
+
 # --- gsettings schema ----------------------------------------------------------
 install_data(
   '@0@.gschema.xml'.format(app_id),
