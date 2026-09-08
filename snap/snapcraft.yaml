@@ -71,6 +71,16 @@ parts:
       - libssl-dev
       - pkg-config
       - git
+
+    # `craftctl default` re-enters craft-parts, which constructs its own
+    # environment rather than inheriting the override-build shell's. A PATH
+    # exported above therefore never reaches meson, which then cannot find
+    # rustc. Declaring it here puts it in the part's environment instead.
+    build-environment:
+      - CARGO_HOME: ${CRAFT_PART_BUILD}/.cargo
+      - RUSTUP_HOME: ${CRAFT_PART_BUILD}/.rustup
+      - PATH: ${CRAFT_PART_BUILD}/.cargo/bin:${PATH}
+
     override-build: |
       # core24 is Ubuntu 24.04, whose archive rustc is older than this
       # workspace's rust-version, so the toolchain has to come from elsewhere.
@@ -78,11 +88,18 @@ parts:
       # Not the rustup snap: the gnome extension puts the GNOME SDK's libc on
       # LD_LIBRARY_PATH for the build, the rustup snap is linked against a
       # different one, and it dies on an undefined GLIBC_PRIVATE symbol before
-      # running a single command. Installing the toolchain into the build
-      # environment itself has no such clash.
-      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-        | sh -s -- -y --no-modify-path --profile minimal --default-toolchain 1.97.0
-      export PATH="$HOME/.cargo/bin:$PATH"
+      # running a single command.
+      #
+      # Not `curl | sh` either: that executes whatever the host serves, at a
+      # version nobody chose, inside a build that produces a signed artifact.
+      # The installer is pinned and its checksum verified before it runs.
+      curl -sSfL -o rustup-init \
+        https://static.rust-lang.org/rustup/archive/1.29.1/x86_64-unknown-linux-gnu/rustup-init
+      echo "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71  rustup-init" \
+        | sha256sum --check --strict -
+      chmod +x rustup-init
+      ./rustup-init -y --no-modify-path --profile minimal --default-toolchain 1.97.0
+      rm rustup-init
       craftctl default
 
   # forqen drives the git binary for rebase, signed commits, hook-running
