@@ -11,9 +11,9 @@
     <name>n1th1n-19</name>
   </developer>
 
-  <url type="homepage">https://github.com/n1th1n-19/forqen</url>
-  <url type="bugtracker">https://github.com/n1th1n-19/forqen/issues</url>
-  <url type="vcs-browser">https://github.com/n1th1n-19/forqen</url>
+  <url type="homepage">https://github.com/n1th1n-19/Forgen</url>
+  <url type="bugtracker">https://github.com/n1th1n-19/Forgen/issues</url>
+  <url type="vcs-browser">https://github.com/n1th1n-19/Forgen</url>
 
   <description>
     <p>
@@ -43,6 +43,22 @@
       GitHub Enterprise Server and multiple accounts are supported.
     </p>
   </description>
+
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/n1th1n-19/Forgen/main/data/screenshots/history.png</image>
+      <caption>Browsing history in a repository with 82,000 commits</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/n1th1n-19/Forgen/main/data/screenshots/changes.png</image>
+      <caption>Staging individual lines before committing</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/n1th1n-19/Forgen/main/data/screenshots/pull-request.png</image>
+      <caption>Reviewing a pull request with inline comments</caption>
+    </screenshot>
+  </screenshots>
 
   <launchable type="desktop-id">io.github.forqen.Forqen.desktop</launchable>
 

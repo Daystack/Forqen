@@ -158,3 +158,23 @@ jobs:
           name: forqen-flatpak
           path: forqen.flatpak
           retention-days: 14
+
+  # Snap packaging, ungated for the same reason the flatpak job is: a packaging
+  # job that has never executed is a hypothesis. This one has real unknowns —
+  # whether gtksourceview-5 is inside the gnome extension's content snap, and
+  # whether the personal-files plugs survive review — and the only way to learn
+  # the first is to build it.
+  snap:
+    name: snap
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: snapcore/action-build@v1
+        id: build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forqen-snap
+          path: ${{ steps.build.outputs.snap }}
+          retention-days: 14

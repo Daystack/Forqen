@@ -1,0 +1,89 @@
+name: forqen
+base: core24
+version: '0.1.0'
+summary: Native GitHub client for Linux
+description: |
+  forqen is a native GTK4 client for git and github.com: history browsing,
+  hunk- and line-level staging, conflict resolution, interactive rebase,
+  pull request review, issues, notifications and Actions.
+
+  It is written in Rust and holds a flat memory curve over large histories —
+  scrolling the whole of git.git costs under two megabytes of resident memory,
+  because commit rows are realized only for the visible window.
+
+grade: stable
+confinement: strict
+compression: lzo
+
+platforms:
+  amd64:
+
+apps:
+  forqen:
+    command: usr/bin/forqen
+    common-id: io.github.forqen.Forqen
+    desktop: usr/share/applications/io.github.forqen.Forqen.desktop
+    extensions: [gnome]
+    environment:
+      # glibc opens a per-thread arena on first allocation from each thread and
+      # never returns them; on a rayon pool that inflates RSS by tens of
+      # megabytes for no data reason. The flatpak wrapper sets the same value.
+      MALLOC_ARENA_MAX: '2'
+      GIT_EXEC_PATH: $SNAP/usr/lib/git-core
+      GIT_TEMPLATE_DIR: $SNAP/usr/share/git-core/templates
+    plugs:
+      - network
+      - home
+      - removable-media
+      # Token storage. forqen refuses to write tokens to disk in plaintext, so
+      # with no Secret Service reachable it cannot sign in at all.
+      - password-manager-service
+      # Everything below is outside the `home` interface, which grants only
+      # non-hidden top-level paths. A git client that cannot read ~/.gitconfig
+      # does not know the user's name, and one that cannot read ~/.ssh cannot
+      # push. Both require Snap Store manual review.
+      - dot-gitconfig
+      - dot-ssh
+
+plugs:
+  dot-gitconfig:
+    interface: personal-files
+    read:
+      - $HOME/.gitconfig
+      - $HOME/.config/git
+  dot-ssh:
+    interface: personal-files
+    read:
+      - $HOME/.ssh
+
+parts:
+  forqen:
+    plugin: meson
+    source: .
+    meson-parameters:
+      - --prefix=/usr
+      - -Dprofile=release
+    build-snaps:
+      - rustup
+    build-packages:
+      - libgtk-4-dev
+      - libadwaita-1-dev
+      - libgtksourceview-5-dev
+      - libssl-dev
+      - pkg-config
+      - git
+    override-build: |
+      # core24 is Ubuntu 24.04, whose archive rustc is older than this
+      # workspace's rust-version. Pin the toolchain rather than depending on
+      # whatever the base happens to ship.
+      rustup default 1.97.0
+      craftctl default
+
+  # forqen drives the git binary for rebase, signed commits, hook-running
+  # commits and transport. Under confinement the host's git is not on PATH, so
+  # it ships inside the snap.
+  git:
+    plugin: nil
+    stage-packages:
+      - git
+      - git-lfs
