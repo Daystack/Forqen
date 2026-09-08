@@ -196,7 +196,7 @@ mod tests {
     #[test]
     fn a_full_payload_reads_permissions_and_licence() {
         let r: RepoSettings = serde_json::from_str(
-            r#"{"full_name":"n1th1n-19/Forgen","private":true,"archived":false,
+            r#"{"full_name":"Daystack/Forqen","private":true,"archived":false,
                 "default_branch":"main","visibility":"private",
                 "permissions":{"admin":true,"push":true,"pull":true},
                 "license":{"spdx_id":"GPL-3.0","name":"GNU General Public License v3.0"},

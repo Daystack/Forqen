@@ -9,11 +9,11 @@ Comment=Native GitHub client for Linux
 # unset — glibc reads it at the first malloc, long before main(), so nothing
 # in-process can set it.
 Exec=forqen %U
-Icon=io.github.forqen.Forqen
+Icon=space.daystack.Forqen
 Terminal=false
 Type=Application
 Categories=Development;RevisionControl;
 Keywords=git;github;version control;vcs;pull request;
 StartupNotify=true
-StartupWMClass=io.github.forqen.Forqen
+StartupWMClass=space.daystack.Forqen
 MimeType=x-scheme-handler/x-github-client;

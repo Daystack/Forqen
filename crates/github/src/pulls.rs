@@ -298,15 +298,15 @@ mod tests {
     #[test]
     fn parses_https_and_ssh_remotes() {
         let cases = [
-            "https://github.com/n1th1n-19/forqen.git",
-            "https://github.com/n1th1n-19/forqen",
-            "git@github.com:n1th1n-19/forqen.git",
-            "ssh://git@github.com/n1th1n-19/forqen.git",
+            "https://github.com/Daystack/Forqen.git",
+            "https://github.com/Daystack/Forqen",
+            "git@github.com:Daystack/Forqen.git",
+            "ssh://git@github.com/Daystack/Forqen.git",
         ];
         for url in cases {
             assert_eq!(
                 parse_remote(url),
-                Some(("n1th1n-19".into(), "forqen".into())),
+                Some(("Daystack".into(), "Forqen".into())),
                 "failed on {url}"
             );
         }

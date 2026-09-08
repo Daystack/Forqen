@@ -48,7 +48,7 @@ use state::AppState;
 /// breaks the cycle without leaking either side.
 type ReloadSlot = Rc<RefCell<Option<Rc<dyn Fn()>>>>;
 
-pub const APP_ID: &str = "io.github.forqen.Forqen";
+pub const APP_ID: &str = "space.daystack.Forqen";
 
 /// Build and present the main window.
 ///

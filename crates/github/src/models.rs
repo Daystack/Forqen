@@ -64,17 +64,17 @@ mod tests {
         let json = r#"{
             "id": 1296269,
             "name": "forqen",
-            "full_name": "n1th1n-19/forqen",
+            "full_name": "Daystack/Forqen",
             "private": false,
             "fork": false,
             "description": null,
             "default_branch": "main",
-            "clone_url": "https://github.com/n1th1n-19/forqen.git",
-            "ssh_url": "git@github.com:n1th1n-19/forqen.git",
+            "clone_url": "https://github.com/Daystack/Forqen.git",
+            "ssh_url": "git@github.com:Daystack/Forqen.git",
             "some_field_github_added_last_tuesday": {"nested": true}
         }"#;
         let r: Repository = serde_json::from_str(json).unwrap();
-        assert_eq!(r.full_name, "n1th1n-19/forqen");
+        assert_eq!(r.full_name, "Daystack/Forqen");
         assert_eq!(r.default_branch.as_deref(), Some("main"));
         assert_eq!(r.description, None);
         // Not present in the payload at all — must default to None, not fail.

@@ -254,8 +254,8 @@ cargo test -p git -p auth -p db -p github
 
 ```bash
 flatpak-builder --user --install --force-clean \
-    build build-aux/io.github.forqen.Forqen.yml
-flatpak run io.github.forqen.Forqen
+    build build-aux/space.daystack.Forqen.yml
+flatpak run space.daystack.Forqen
 ```
 
 The manifest punches specific holes that are worth knowing about:

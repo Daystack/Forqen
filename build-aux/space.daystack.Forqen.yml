@@ -4,7 +4,7 @@
 # holes below are architectural. Discovering in month six that push cannot
 # reach ssh-agent, or that the keyring is unreachable, means redoing auth —
 # not adding a manifest line.
-id: io.github.forqen.Forqen
+id: space.daystack.Forqen
 runtime: org.gnome.Platform
 # Tracks the current GNOME runtime. Bumping this is not free — each branch is a
 # separate ~1GB runtime download for every user — so it moves deliberately,

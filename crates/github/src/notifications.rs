@@ -151,7 +151,7 @@ mod tests {
             },
             repository: NotificationRepo {
                 name: "forqen".into(),
-                full_name: "n1th1n-19/forqen".into(),
+                full_name: "Daystack/Forqen".into(),
             },
         }
     }
@@ -160,11 +160,11 @@ mod tests {
     fn extracts_a_pull_request_number_from_the_subject_url() {
         let n = notification(
             "PullRequest",
-            Some("https://api.github.com/repos/n1th1n-19/forqen/pulls/2382"),
+            Some("https://api.github.com/repos/Daystack/Forqen/pulls/2382"),
             "review_requested",
         );
         assert_eq!(n.number(), Some(2382));
-        assert_eq!(n.owner_and_repo(), Some(("n1th1n-19", "forqen")));
+        assert_eq!(n.owner_and_repo(), Some(("Daystack", "Forqen")));
     }
 
     #[test]

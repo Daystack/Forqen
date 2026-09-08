@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>io.github.forqen.Forqen</id>
+  <id>space.daystack.Forqen</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
 
@@ -11,9 +11,9 @@
     <name>n1th1n-19</name>
   </developer>
 
-  <url type="homepage">https://github.com/n1th1n-19/Forgen</url>
-  <url type="bugtracker">https://github.com/n1th1n-19/Forgen/issues</url>
-  <url type="vcs-browser">https://github.com/n1th1n-19/Forgen</url>
+  <url type="homepage">https://forqen.daystack.space</url>
+  <url type="bugtracker">https://github.com/Daystack/Forqen/issues</url>
+  <url type="vcs-browser">https://github.com/Daystack/Forqen</url>
 
   <description>
     <p>
@@ -47,20 +47,20 @@
 
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/n1th1n-19/Forgen/main/data/screenshots/history.png</image>
+      <image>https://raw.githubusercontent.com/Daystack/Forqen/main/data/screenshots/history.png</image>
       <caption>Browsing history in a repository with 82,000 commits</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/n1th1n-19/Forgen/main/data/screenshots/changes.png</image>
+      <image>https://raw.githubusercontent.com/Daystack/Forqen/main/data/screenshots/changes.png</image>
       <caption>Staging individual lines before committing</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/n1th1n-19/Forgen/main/data/screenshots/pull-request.png</image>
+      <image>https://raw.githubusercontent.com/Daystack/Forqen/main/data/screenshots/pull-request.png</image>
       <caption>Reviewing a pull request with inline comments</caption>
     </screenshot>
   </screenshots>
 
-  <launchable type="desktop-id">io.github.forqen.Forqen.desktop</launchable>
+  <launchable type="desktop-id">space.daystack.Forqen.desktop</launchable>
 
   <categories>
     <category>Development</category>

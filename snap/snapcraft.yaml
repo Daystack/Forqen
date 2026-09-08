@@ -21,8 +21,8 @@ platforms:
 apps:
   forqen:
     command: usr/bin/forqen
-    common-id: io.github.forqen.Forqen
-    desktop: usr/share/applications/io.github.forqen.Forqen.desktop
+    common-id: space.daystack.Forqen
+    desktop: usr/share/applications/space.daystack.Forqen.desktop
     extensions: [gnome]
     environment:
       # glibc opens a per-thread arena on first allocation from each thread and

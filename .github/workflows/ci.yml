@@ -113,7 +113,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.local/share/flatpak
-          key: flatpak-runtimes-${{ hashFiles('build-aux/io.github.forqen.Forqen.yml') }}
+          key: flatpak-runtimes-${{ hashFiles('build-aux/space.daystack.Forqen.yml') }}
           restore-keys: flatpak-runtimes-
 
       - name: Install the runtime, SDK and rust extension
@@ -143,14 +143,14 @@ jobs:
       - name: Build into a local repository
         run: |
           flatpak-builder --user --force-clean --disable-rofiles-fuse \
-            --repo=repo build build-aux/io.github.forqen.Forqen.yml
+            --repo=repo build build-aux/space.daystack.Forqen.yml
 
       # A bundle anyone can download from the run and install with
       # `flatpak install forqen.flatpak` — the thing that proves packaging
       # actually produced something installable.
       - name: Export a bundle
         run: |
-          flatpak build-bundle repo forqen.flatpak io.github.forqen.Forqen master
+          flatpak build-bundle repo forqen.flatpak space.daystack.Forqen master
           ls -lh forqen.flatpak
 
       - uses: actions/upload-artifact@v4

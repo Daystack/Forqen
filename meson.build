@@ -13,7 +13,7 @@ project(
   meson_version: '>= 1.0.0',
 )
 
-app_id = 'io.github.forqen.Forqen'
+app_id = 'space.daystack.Forqen'
 
 cargo = find_program('cargo', required: true)
 glib_compile_schemas = find_program('glib-compile-schemas', required: false)

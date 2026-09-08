@@ -40,7 +40,7 @@ forqen/
 │   └── app/                    # binary `forqen`; wires the above
 ├── data/                       # .desktop, appstream metainfo, gschema, icons
 ├── build-aux/
-│   └── io.github.forqen.Forqen.yml   # flatpak manifest
+│   └── space.daystack.Forqen.yml   # flatpak manifest
 └── meson.build                 # GNOME-conventional build, wraps cargo
 ```
 
@@ -363,10 +363,10 @@ Present already: `rustc` 1.96.0, `git` 2.43.0, `gh` (authed as `n1th1n-19`),
 | Token never leaks | `grep -r` over logs after a full session; panic-hook redaction unit test |
 | API layer | `wiremock` fixtures for REST + GraphQL; assert ETag revalidation issues `If-None-Match` and a 304 does not refetch |
 | UI | `cargo test` on view models (no GTK); manual smoke per phase; `broadwayd` headless for CI screenshots |
-| Flatpak | `flatpak-builder --user --install build build-aux/io.github.forqen.Forqen.yml` then verify ssh-agent push and keyring access **inside** the sandbox — this is where sandbox holes are proven, not on the host |
+| Flatpak | `flatpak-builder --user --install build build-aux/space.daystack.Forqen.yml` then verify ssh-agent push and keyring access **inside** the sandbox — this is where sandbox holes are proven, not on the host |
 | Perf | `criterion` benches on revwalk, status, and diff against small / medium / `linux` repos; regression-gated |
 
-**R0 acceptance:** `flatpak run io.github.forqen.Forqen` → device-flow login →
+**R0 acceptance:** `flatpak run space.daystack.Forqen` → device-flow login →
 clone a repo → scroll 100k commits smoothly → RSS under 140 MB.
 
 ---
