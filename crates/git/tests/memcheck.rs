@@ -8,8 +8,12 @@
 //! commit` in a loop: 20k commits is seconds one way and many minutes the
 //! other, and a gate slow enough to skip is a gate nobody runs.
 //!
-//! Set `FORQEN_MEMCHECK_REPO=/path/to/linux` to run against a real large
-//! repository instead of the synthetic one.
+//! Synthetic on purpose. The ceiling below is calibrated against a fixture
+//! whose packfiles are a few hundred kilobytes; on a real repository gix's
+//! pack mappings and object cache alone exceed it, and the test would fail for
+//! a reason that has nothing to do with the windowed model. Real repositories
+//! are measured in `large_repository.rs`, where the assertions match what can
+//! honestly be claimed about them.
 
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -97,15 +101,9 @@ fn fast_import_fixture(dir: &Path, n: usize) {
 /// depending on thread scheduling, which is worse than no gate.
 #[test]
 fn scrolling_a_large_history_stays_within_budget() {
-    let (path, _guard): (PathBuf, Option<tempfile::TempDir>) =
-        match std::env::var_os("FORQEN_MEMCHECK_REPO") {
-            Some(p) => (PathBuf::from(p), None),
-            None => {
-                let dir = tempfile::tempdir().expect("tempdir");
-                fast_import_fixture(dir.path(), COMMITS);
-                (dir.path().to_path_buf(), Some(dir))
-            }
-        };
+    let dir = tempfile::tempdir().expect("tempdir");
+    fast_import_fixture(dir.path(), COMMITS);
+    let path: PathBuf = dir.path().to_path_buf();
 
     let baseline = rss_kb();
 
