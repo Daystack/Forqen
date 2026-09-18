@@ -8,6 +8,7 @@
 pub mod actions;
 pub mod blame;
 pub mod changes;
+pub mod clone;
 pub mod commands;
 pub mod commit_list;
 pub mod conflicts;
@@ -91,6 +92,9 @@ pub fn build_window(
 
     let open_btn = crate::commands::icon_button("folder-open-symbolic", "Open a repository");
     header.pack_start(&open_btn);
+
+    let clone_btn = crate::commands::icon_button("folder-download-symbolic", "Clone a repository");
+    header.pack_start(&clone_btn);
 
     let stash_btn = crate::commands::icon_button("edit-paste-symbolic", "Stashes");
 
@@ -493,6 +497,21 @@ pub fn build_window(
         });
     }
 
+    {
+        let views = views.clone();
+        let window_ = window.clone();
+        let rt_ = rt.clone();
+        clone_btn.connect_clicked(move |_| {
+            let views = views.clone();
+            clone::present(
+                &window_,
+                &window_,
+                rt_.clone(),
+                Rc::new(move |path| views.load_repo(path)),
+            );
+        });
+    }
+
     wire_selection(&selection, &state, &detail);
     wire_branch_switching(&refs_list, &views);
 
@@ -610,6 +629,7 @@ pub fn build_window(
         app,
         &[
             ("open", &open_btn),
+            ("clone", &clone_btn),
             ("stashes", &stash_btn),
             ("rebase", &rebase_btn),
             ("worktrees", &worktree_btn),
@@ -932,7 +952,7 @@ fn github_client_state() -> ClientState {
     }
 }
 
-fn github_client() -> Option<std::sync::Arc<github::Client>> {
+pub(crate) fn github_client() -> Option<std::sync::Arc<github::Client>> {
     github_client_state().client()
 }
 

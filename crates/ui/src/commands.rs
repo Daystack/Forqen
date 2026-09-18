@@ -20,6 +20,7 @@ pub type Spec = (&'static str, &'static str, &'static [&'static str]);
 /// they are mechanical.
 pub const BUTTON_COMMANDS: &[Spec] = &[
     ("open", "Open a repository", &["<Control>o"]),
+    ("clone", "Clone a repository", &["<Control><Shift>o"]),
     ("stashes", "Stashes", &["<Control><Shift>s"]),
     ("rebase", "Interactive rebase", &["<Control><Shift>r"]),
     ("worktrees", "Worktrees", &["<Control><Shift>w"]),

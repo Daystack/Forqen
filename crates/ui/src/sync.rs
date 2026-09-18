@@ -142,6 +142,67 @@ pub fn run(
     });
 }
 
+/// Clone `url` into `dest` in the background, reporting progress and calling
+/// `on_done` with the cloned path on success.
+///
+/// A sibling to `run()` rather than a case inside it: every `Operation`
+/// re-opens an existing repository at `repo_path` before acting on it, and a
+/// clone has no repository to open yet — that is the operation. Threading and
+/// the progress/toast machinery are otherwise identical, so this is
+/// deliberately the same shape read next to `run()`, not a fork of it.
+pub fn clone(
+    window: &adw::ApplicationWindow,
+    url: String,
+    dest: PathBuf,
+    on_done: Rc<dyn Fn(Result<PathBuf, String>)>,
+) {
+    let (tx, rx) = async_channel::bounded::<Update>(64);
+    let token = default_token();
+
+    let dest_for_worker = dest.clone();
+    std::thread::spawn(move || {
+        let mut sink = |p: Progress| {
+            let _ = tx.try_send(Update::Progress(p));
+        };
+        let result = remote::clone(&url, &dest_for_worker, token.as_deref(), &mut sink)
+            .map_err(|e| e.to_string());
+        let _ = tx.send_blocking(Update::Done(result));
+    });
+
+    let toast_overlay = find_toast_overlay(window);
+    let window = window.clone();
+
+    glib::spawn_future_local(async move {
+        let mut last_phase = String::new();
+        while let Ok(update) = rx.recv().await {
+            match update {
+                Update::Progress(p) => {
+                    if p.phase != last_phase {
+                        last_phase = p.phase.clone();
+                        tracing::debug!(phase = %p.phase, percent = ?p.percent, "clone");
+                    }
+                }
+                Update::Done(result) => {
+                    match (&result, &toast_overlay) {
+                        (Ok(()), Some(overlay)) => {
+                            overlay.add_toast(adw::Toast::new("Clone complete"));
+                        }
+                        (Err(message), _) => {
+                            let dialog =
+                                adw::AlertDialog::new(Some("Clone failed"), Some(message));
+                            dialog.add_response("ok", "OK");
+                            dialog.present(Some(&window));
+                        }
+                        _ => {}
+                    }
+                    on_done(result.map(|()| dest.clone()));
+                    return;
+                }
+            }
+        }
+    });
+}
+
 /// Token for the default github.com account, if one is signed in.
 ///
 /// `None` is normal and not an error: SSH remotes authenticate through

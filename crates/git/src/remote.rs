@@ -1,4 +1,4 @@
-//! Remotes: fetch, pull, push, and the credential plumbing they need.
+//! Remotes: clone, fetch, pull, push, and the credential plumbing they need.
 //!
 //! ## Why the `git` binary
 //!
@@ -21,6 +21,7 @@
 
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader};
+use std::path::Path;
 use std::process::{Command, Stdio};
 
 use crate::{GitError, Repo};
@@ -183,35 +184,34 @@ pub fn has_upstream(repo: &Repo, branch: &str) -> bool {
     .is_ok()
 }
 
+/// Apply the token credential helper and the no-prompt guard shared by every
+/// transfer command.
+///
+/// Token via env, never argv — `/proc/<pid>/cmdline` is world-readable. And
+/// never block on an interactive prompt: with no usable credential, git would
+/// otherwise sit waiting for a terminal that does not exist and the operation
+/// would appear to hang.
+fn apply_credentials(cmd: &mut Command, token: Option<&str>) {
+    if let Some(t) = token {
+        cmd.env("FORQEN_TOKEN", t);
+        cmd.arg("-c")
+            .arg(format!("credential.helper={TOKEN_HELPER}"));
+    }
+    cmd.env("GIT_TERMINAL_PROMPT", "0");
+}
+
 /// Run a transfer, streaming git's progress output to `sink`.
 ///
 /// git writes progress to **stderr**, using `\r` to overwrite one line rather
 /// than `\n`, so this reads bytes and splits on both. A line-based reader shows
 /// nothing until the transfer finishes.
-fn run_with_progress(
-    repo: &Repo,
-    args: &[&str],
-    token: Option<&str>,
-    sink: ProgressSink<'_>,
-) -> Result<(), GitError> {
-    let workdir = repo.workdir().unwrap_or_else(|| repo.git_dir());
-
-    let mut cmd = Command::new("git");
-    cmd.arg("-C").arg(workdir);
-
-    if let Some(t) = token {
-        // Token via env, never argv — /proc/<pid>/cmdline is world-readable.
-        cmd.env("FORQEN_TOKEN", t);
-        cmd.arg("-c")
-            .arg(format!("credential.helper={TOKEN_HELPER}"));
-    }
-
-    // Never block on an interactive prompt: with no usable credential, git
-    // would otherwise sit waiting for a terminal that does not exist and the
-    // operation would appear to hang.
-    cmd.env("GIT_TERMINAL_PROMPT", "0");
-
-    cmd.args(args).stdout(Stdio::piped()).stderr(Stdio::piped());
+///
+/// Shared by fetch, pull, push and clone — the streaming is identical
+/// regardless of which one is running; only how `cmd` was built differs, and
+/// `op` names the failing operation in the error rather than guessing it back
+/// out of the command line.
+fn stream_progress(mut cmd: Command, op: &str, sink: ProgressSink<'_>) -> Result<(), GitError> {
+    cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
 
     let mut child = cmd.spawn()?;
     let stderr = child.stderr.take().expect("stderr piped above");
@@ -242,12 +242,45 @@ fn run_with_progress(
     let status = child.wait()?;
     if !status.success() {
         return Err(GitError::Walk(format!(
-            "git {} failed: {}",
-            args.first().copied().unwrap_or("?"),
+            "git {op} failed: {}",
             collected.trim()
         )));
     }
     Ok(())
+}
+
+fn run_with_progress(
+    repo: &Repo,
+    args: &[&str],
+    token: Option<&str>,
+    sink: ProgressSink<'_>,
+) -> Result<(), GitError> {
+    let workdir = repo.workdir().unwrap_or_else(|| repo.git_dir());
+    let op = args.first().copied().unwrap_or("?");
+
+    let mut cmd = Command::new("git");
+    cmd.arg("-C").arg(workdir);
+    apply_credentials(&mut cmd, token);
+    cmd.args(args);
+    stream_progress(cmd, op, sink)
+}
+
+/// Clone `url` into `dest`, which must not already exist.
+///
+/// No `Repo` exists yet to call this on — that is the whole point — so unlike
+/// `fetch`/`pull`/`push` this builds its own bare command rather than going
+/// through `run_with_progress`. On success the caller opens `dest` with
+/// `Repo::open` exactly as it would any other repository.
+pub fn clone(
+    url: &str,
+    dest: &Path,
+    token: Option<&str>,
+    progress: ProgressSink<'_>,
+) -> Result<(), GitError> {
+    let mut cmd = Command::new("git");
+    apply_credentials(&mut cmd, token);
+    cmd.args(["clone", "--progress"]).arg(url).arg(dest);
+    stream_progress(cmd, "clone", progress)
 }
 
 /// `read_until` for two delimiters at once.
@@ -796,6 +829,66 @@ mod tests {
         assert_eq!(
             String::from_utf8_lossy(&out.stdout).trim(),
             "rewritten version"
+        );
+    }
+
+    #[test]
+    fn clone_produces_an_openable_repo_with_the_source_history() {
+        let remote_dir = bare_remote();
+        let a = fixture(2);
+        let repo_a = Repo::open(a.path()).unwrap();
+        add(&repo_a, "origin", remote_dir.path().to_str().unwrap()).unwrap();
+        push(
+            &repo_a,
+            "origin",
+            "main",
+            PushMode::Normal,
+            true,
+            None,
+            &mut noop,
+        )
+        .unwrap();
+
+        // A same-filesystem local clone hardlinks objects instead of
+        // transferring them, so git may report no progress lines at all —
+        // that streaming path is already covered against synthetic data
+        // above. What this proves is the part local clones cannot skip: a
+        // working repository with the source's history and its own remote.
+        let dest = tempfile::tempdir().unwrap();
+        let dest_path = dest.path().join("cloned");
+        clone(
+            remote_dir.path().to_str().unwrap(),
+            &dest_path,
+            None,
+            &mut noop,
+        )
+        .unwrap();
+
+        let cloned = Repo::open(&dest_path).unwrap();
+        let out = Command::new("git")
+            .arg("-C")
+            .arg(&dest_path)
+            .args(["rev-list", "--count", "HEAD"])
+            .output()
+            .unwrap();
+        assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "2");
+        assert!(
+            list(&cloned).unwrap().iter().any(|r| r.name == "origin"),
+            "a clone must configure its own origin remote"
+        );
+    }
+
+    #[test]
+    fn cloning_into_an_existing_nonempty_directory_fails_with_gits_message() {
+        let remote_dir = bare_remote();
+        let dest = tempfile::tempdir().unwrap();
+        std::fs::write(dest.path().join("already-here.txt"), "squatting\n").unwrap();
+
+        let err = clone(remote_dir.path().to_str().unwrap(), dest.path(), None, &mut noop)
+            .unwrap_err();
+        assert!(
+            err.to_string().contains("git clone failed"),
+            "unexpected message: {err}"
         );
     }
 
