@@ -271,16 +271,35 @@ fn run_with_progress(
 /// `fetch`/`pull`/`push` this builds its own bare command rather than going
 /// through `run_with_progress`. On success the caller opens `dest` with
 /// `Repo::open` exactly as it would any other repository.
+///
+/// `url` and `dest` reach here as free text typed into the clone dialog —
+/// nothing else in this module takes an argument that direct. A value like
+/// `--upload-pack=/bin/sh` typed into the URL field is a valid-looking
+/// argument to `git clone`, not a valid-looking URL, unless something tells
+/// git where the flags end. `--` is that something: everything after it is
+/// positional no matter what it starts with, which is the standard git-level
+/// fix for this rather than trying to enumerate safe URL shapes ourselves —
+/// an allowlist would also have to admit scp-style `user@host:path` and bare
+/// local filesystem paths, both legitimate clone sources with no scheme.
 pub fn clone(
     url: &str,
     dest: &Path,
     token: Option<&str>,
     progress: ProgressSink<'_>,
 ) -> Result<(), GitError> {
+    stream_progress(build_clone_command(url, dest, token), "clone", progress)
+}
+
+/// Build the `git clone` command without running it — split out from
+/// `clone()` so the argument order is something a test can inspect directly
+/// via `Command::get_args()`, rather than only provable by trying to trigger
+/// a side effect through git's own local-transport internals, which is
+/// fragile and version-dependent.
+fn build_clone_command(url: &str, dest: &Path, token: Option<&str>) -> Command {
     let mut cmd = Command::new("git");
     apply_credentials(&mut cmd, token);
-    cmd.args(["clone", "--progress"]).arg(url).arg(dest);
-    stream_progress(cmd, "clone", progress)
+    cmd.args(["clone", "--progress", "--"]).arg(url).arg(dest);
+    cmd
 }
 
 /// `read_until` for two delimiters at once.
@@ -875,6 +894,31 @@ mod tests {
         assert!(
             list(&cloned).unwrap().iter().any(|r| r.name == "origin"),
             "a clone must configure its own origin remote"
+        );
+    }
+
+    #[test]
+    fn clone_command_puts_end_of_options_before_the_url_and_destination() {
+        // `url` and `dest` reach `clone()` as free text typed into the clone
+        // dialog — nothing else in this module takes an argument that direct.
+        // Without `--` before them, a value like `--upload-pack=/bin/sh`
+        // typed into the URL field is not a malformed URL to git, it is a
+        // flag: `--upload-pack` names an arbitrary command git runs on the
+        // "remote" side for a local-path transport. Checked by inspecting
+        // the built `Command` directly — trying to prove this by triggering
+        // the side effect through git's own local-transport internals is
+        // fragile and depends on git-version-specific behaviour a unit test
+        // should not need to know about.
+        let cmd = build_clone_command("--upload-pack=touch /tmp/pwned", Path::new("/tmp/dest"), None);
+        let args: Vec<&str> = cmd.get_args().map(|a| a.to_str().unwrap()).collect();
+        let dashdash = args
+            .iter()
+            .position(|a| *a == "--")
+            .expect("no end-of-options marker before user-controlled arguments");
+        assert_eq!(
+            &args[dashdash + 1..],
+            &["--upload-pack=touch /tmp/pwned", "/tmp/dest"],
+            "url and dest must be the only arguments after --, in that order"
         );
     }
 
