@@ -538,6 +538,7 @@ fn build_layout(
         .hscrollbar_policy(gtk::PolicyType::Never)
         .height_request(150)
         .build();
+    jobs_scroll.add_css_class("card");
 
     let log_scroll = gtk::ScrolledWindow::builder()
         .child(log)

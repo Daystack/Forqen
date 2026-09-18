@@ -40,23 +40,12 @@ pub fn present(
     page.set_title("Appearance");
     page.set_icon_name(Some("applications-graphics-symbolic"));
 
-    let (theme_now, font_now, density_now) = current(prefs.as_ref());
+    let (_theme_now, font_now, density_now) = current(prefs.as_ref());
 
-    // ── theme ────────────────────────────────────────────────────────────
-    let theme_group = adw::PreferencesGroup::new();
-    theme_group.set_title("Theme");
-    theme_group.set_description(Some(
-        "Each is a complete system — palette, corner radius and rules — not a \
-         recolouring of the same one.",
-    ));
-
-    let theme_labels: Vec<&str> = Theme::ALL.iter().map(|t| t.label()).collect();
-    let theme_row = adw::ComboRow::new();
-    theme_row.set_title("Theme");
-    theme_row.set_model(Some(&gtk::StringList::new(&theme_labels)));
-    theme_row.set_selected(Theme::ALL.iter().position(|t| *t == theme_now).unwrap_or(0) as u32);
-    theme_row.set_subtitle(theme_now.description());
-    theme_group.add(&theme_row);
+    // No theme picker: forqen ships one considered dark theme rather than a
+    // choice between several. `current()` still returns a `Theme` because
+    // `apply_appearance` needs one to pass to `theme::stylesheet` — there is
+    // just nothing here to let the user change it to.
 
     // ── typeface ─────────────────────────────────────────────────────────
     let font_group = adw::PreferencesGroup::new();
@@ -115,19 +104,6 @@ pub fn present(
     {
         let prefs = prefs.clone();
         let on_change = on_change.clone();
-        let row = theme_row.clone();
-        theme_row.connect_selected_notify(move |r| {
-            let theme = Theme::ALL[r.selected().min(2) as usize];
-            row.set_subtitle(theme.description());
-            if let Some(p) = &prefs {
-                p.set_string("theme", theme.id()).ok();
-            }
-            on_change();
-        });
-    }
-    {
-        let prefs = prefs.clone();
-        let on_change = on_change.clone();
         let available = available.clone();
         let row = font_row.clone();
         font_row.connect_selected_notify(move |r| {
@@ -153,7 +129,6 @@ pub fn present(
         });
     }
 
-    page.add(&theme_group);
     page.add(&font_group);
     page.add(&density_group);
     dialog.add(&page);

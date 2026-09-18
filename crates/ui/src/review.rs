@@ -493,12 +493,14 @@ fn build_layout(
         .hscrollbar_policy(gtk::PolicyType::Never)
         .vexpand(true)
         .build();
+    threads_scroll.add_css_class("card");
 
     let drafts_scroll = gtk::ScrolledWindow::builder()
         .child(draft_list)
         .hscrollbar_policy(gtk::PolicyType::Never)
         .height_request(110)
         .build();
+    drafts_scroll.add_css_class("card");
 
     let summary_scroll = gtk::ScrolledWindow::builder()
         .child(summary)

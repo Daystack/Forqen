@@ -1072,22 +1072,14 @@ fn style_provider() -> &'static gtk::CssProvider {
 pub fn apply_appearance(prefs: Option<&gtk::gio::Settings>) {
     let (theme_choice, font, density) = preferences::current(prefs);
 
-    // Lane is drawn dark-first, so ask libadwaita for the matching scheme
-    // rather than letting a light desktop wash it out.
+    // Forge is the only theme shipped, and it is dark — ask libadwaita for
+    // the matching scheme rather than letting a light desktop wash it out.
     if let Some(style) = adw::StyleManager::default().into() {
         let manager: adw::StyleManager = style;
-        manager.set_color_scheme(if theme_choice.prefers_dark() {
-            adw::ColorScheme::ForceDark
-        } else {
-            adw::ColorScheme::ForceLight
-        });
+        manager.set_color_scheme(adw::ColorScheme::ForceDark);
     }
 
-    let css = format!(
-        "{}\n{}",
-        theme::stylesheet(theme_choice, font, density),
-        diff_view::CSS
-    );
+    let css = theme::stylesheet(theme_choice, font, density);
     style_provider().load_from_string(&css);
 }
 

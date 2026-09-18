@@ -665,6 +665,7 @@ fn build_layout(
             .hscrollbar_policy(gtk::PolicyType::Never)
             .vexpand(true)
             .build();
+        scroll.add_css_class("card");
         b.append(&scroll);
         b
     };

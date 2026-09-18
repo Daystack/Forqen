@@ -425,23 +425,11 @@ fn text_column() -> gtk::ColumnViewColumn {
         .build()
 }
 
-/// Colours for the diff rows.
-///
-/// Defined against libadwaita's named palette rather than as literal hex, so
-/// they track the user's light/dark preference and accent instead of being two
-/// fixed colours that look wrong in one of the two themes.
-pub const CSS: &str = "
-.diff-view .diff-added {
-    background-color: alpha(@success_color, 0.18);
-}
-.diff-view .diff-removed {
-    background-color: alpha(@error_color, 0.18);
-}
-.diff-view .diff-hunk-header {
-    color: alpha(currentColor, 0.6);
-    font-weight: bold;
-}
-";
+// Diff row colours live in `theme::stylesheet()` alone. This used to carry a
+// second, competing definition of the same selectors against libadwaita's
+// generic @success_color/@error_color — not this app's palette — so the two
+// stylesheets fought over `.diff-view .diff-added`/`.diff-removed` every time
+// both loaded, which they always did.
 
 #[cfg(test)]
 mod tests {

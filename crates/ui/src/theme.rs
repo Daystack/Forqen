@@ -13,130 +13,73 @@
 use std::fmt;
 
 /// A complete visual system: palette plus geometry.
+///
+/// One shipped theme, styled after macOS's Dark Mode — its layered flat
+/// surfaces, hairline separators and label tiers, with forqen's own orange
+/// accent rather than systemBlue. No light variant: a native Linux app has no
+/// portable equivalent to NSVisualEffectView, so the macOS *look* here is
+/// flat colour steps standing in for vibrancy, not an attempt at translucency.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum Theme {
-    /// Cold metal with one hot accent. The default.
+    /// Cold metal with one hot accent. The default, and the only theme.
     #[default]
     Forge,
-    /// Dark-first, colour used only to identify branches.
-    Lane,
-    /// Warm paper, near-square corners, rules instead of shadows.
-    Ledger,
 }
 
 impl Theme {
-    pub const ALL: [Theme; 3] = [Theme::Forge, Theme::Lane, Theme::Ledger];
+    pub const ALL: [Theme; 1] = [Theme::Forge];
 
     /// The value stored in GSettings.
     pub fn id(self) -> &'static str {
         match self {
             Theme::Forge => "forge",
-            Theme::Lane => "lane",
-            Theme::Ledger => "ledger",
         }
     }
 
-    pub fn from_id(id: &str) -> Self {
-        match id {
-            "lane" => Theme::Lane,
-            "ledger" => Theme::Ledger,
-            // An unknown id means a settings file from a newer version, or a
-            // typo. Falling back to the default beats refusing to start.
-            _ => Theme::Forge,
-        }
+    pub fn from_id(_id: &str) -> Self {
+        // Only one theme ships, so every id — current, stale, or typoed —
+        // resolves to it. Keeping the function rather than inlining `Forge`
+        // at call sites means a second theme, if one is ever added, has one
+        // place to teach the fallback.
+        Theme::Forge
     }
 
     pub fn label(self) -> &'static str {
         match self {
             Theme::Forge => "Forge",
-            Theme::Lane => "Lane",
-            Theme::Ledger => "Ledger",
         }
     }
 
     pub fn description(self) -> &'static str {
         match self {
             Theme::Forge => "Cold metal, one hot accent. Warmth marks state.",
-            Theme::Lane => "Dark. Colour identifies a branch, nothing else.",
-            Theme::Ledger => "Warm paper and rules. History as a written record.",
-        }
-    }
-
-    /// Whether this theme is drawn dark-first.
-    ///
-    /// Reported so the preferences dialog can say so — picking Lane while the
-    /// desktop is in light mode is legitimate, but the user should know the
-    /// theme will not follow the system.
-    pub fn prefers_dark(self) -> bool {
-        matches!(self, Theme::Lane)
-    }
-
-    /// The accent, for callers that need it outside CSS — the app icon tint
-    /// and the diff-view selection among them.
-    pub fn accent(self) -> &'static str {
-        match self {
-            Theme::Forge => "#c1662f",
-            Theme::Lane => "#0e7c7b",
-            Theme::Ledger => "#8c3a2b",
-        }
-    }
-
-    /// Corner radius in px. Radius reads as tone: square is instrumental,
-    /// round is friendly, and the three directions sit at different points.
-    pub fn radius(self) -> u32 {
-        match self {
-            Theme::Forge => 6,
-            Theme::Lane => 4,
-            Theme::Ledger => 2,
         }
     }
 
     fn palette(self) -> Palette {
         match self {
+            // Values are macOS's own published Dark Mode system colours
+            // (window, sidebar, separator and label tiers) — not eyeballed.
+            // The only departures from stock macOS are the accent, which is
+            // forqen's own rather than systemBlue, and the diff add/del
+            // pair, which predate this palette and already read as
+            // dark-mode-native.
             Theme::Forge => Palette {
-                bg: "#f4f3f1",
-                bg_alt: "#efedea",
-                bar: "#eae8e5",
-                fg: "#1c1f21",
-                fg_dim: "#5a6165",
-                rule: "#d8d4cf",
-                accent: "#c1662f",
-                accent_fg: "#ffffff",
-                accent_soft: "#f7e4d6",
-                add: "#dcebdd",
-                del: "#f6dcd6",
-                add_fg: "#1d4023",
-                del_fg: "#5c1f19",
-            },
-            Theme::Lane => Palette {
-                bg: "#0f1417",
-                bg_alt: "#131a1d",
-                bar: "#151c20",
-                fg: "#dfe7ea",
-                fg_dim: "#93a3aa",
-                rule: "#232d32",
-                accent: "#0e7c7b",
-                accent_fg: "#eafcfb",
-                accent_soft: "#16302f",
-                add: "#14301f",
-                del: "#331a1c",
-                add_fg: "#a8e6b8",
-                del_fg: "#f2b8b5",
-            },
-            Theme::Ledger => Palette {
-                bg: "#faf8f4",
-                bg_alt: "#f6f2ea",
-                bar: "#f3efe7",
-                fg: "#1a1815",
-                fg_dim: "#5d564b",
-                rule: "#ddd6c9",
-                accent: "#8c3a2b",
-                accent_fg: "#faf8f4",
-                accent_soft: "#e6d9c9",
-                add: "#e0e9d8",
-                del: "#efdcd6",
-                add_fg: "#2c4020",
-                del_fg: "#5c211a",
+                bg: "#1e1e1e",
+                bg_alt: "#262626",
+                bar: "#1f1f1f",
+                raised: "#2b2b2b",
+                fg: "#f2f2f5",
+                fg_dim: "#98989d",
+                rule: "#38383a",
+                rule_soft: "#2e2e30",
+                accent: "#e07d45",
+                accent_fg: "#1a1210",
+                accent_soft: "#33221a",
+                add: "#16301f",
+                del: "#331c1a",
+                add_fg: "#a5dcb2",
+                del_fg: "#efb3ac",
             },
         }
     }
@@ -152,9 +95,15 @@ struct Palette {
     bg: &'static str,
     bg_alt: &'static str,
     bar: &'static str,
+    /// Popovers, dialogs and cards — a step above `bg_alt`, standing in for
+    /// the elevation a real compositor blur would otherwise provide.
+    raised: &'static str,
     fg: &'static str,
     fg_dim: &'static str,
     rule: &'static str,
+    /// A softer divider than `rule`, for dividers within a list rather than
+    /// between major regions.
+    rule_soft: &'static str,
     accent: &'static str,
     accent_fg: &'static str,
     accent_soft: &'static str,
@@ -321,9 +270,20 @@ impl Density {
 }
 
 /// Build the complete stylesheet for a combination.
+///
+/// Geometry is not one radius applied everywhere. macOS doesn't do that
+/// either: push buttons are full capsules regardless of width, surfaces
+/// (cards, popovers, dialogs) use a moderate radius, and only the sidebar's
+/// selection highlight is a smaller inset pill — the main content area's row
+/// selection stays edge-to-edge, the way a Mail message list or an Xcode
+/// editor selects. With one theme shipped, these stop being a per-theme
+/// `radius()` method and become fixed constants here.
 pub fn stylesheet(theme: Theme, font: Font, density: Density) -> String {
+    const RADIUS_CONTROL: &str = "999px"; // buttons: always a full capsule
+    const RADIUS_SURFACE: &str = "10px"; // cards, popovers, dialogs
+    const RADIUS_ROW: &str = "6px"; // sidebar selection pill, and entries
+
     let p = theme.palette();
-    let r = theme.radius();
     let pad = density.row_pad();
     let gut = density.gutter();
     let ui = font.ui_stack();
@@ -342,9 +302,9 @@ pub fn stylesheet(theme: Theme, font: Font, density: Density) -> String {
 @define-color headerbar_fg_color {fg};
 @define-color sidebar_bg_color {bg_alt};
 @define-color sidebar_fg_color {fg};
-@define-color card_bg_color {bg_alt};
-@define-color popover_bg_color {bg_alt};
-@define-color dialog_bg_color {bg};
+@define-color card_bg_color {raised};
+@define-color popover_bg_color {raised};
+@define-color dialog_bg_color {raised};
 @define-color accent_bg_color {accent};
 @define-color accent_fg_color {accent_fg};
 @define-color accent_color {accent};
@@ -365,23 +325,62 @@ headerbar {{
 
 .monospace, .diff-view, textview.monospace {{ font-family: {mono}; }}
 
+/* GtkTextView and GtkEntry paint their own text-node background — it is not
+   inherited from a parent's `.card`/`.background` class, so leaving this
+   unset is how a plain text view or an empty comment box renders as a solid,
+   illegible block regardless of which theme is loaded. `bg`/`fg` is the safe
+   default everywhere; a textview living inside `.card` (a comment box, the
+   commit message editor) steps up to `raised` to match the surface around
+   it instead of looking like a hole punched through it. */
+textview, textview text, entry {{
+    background-color: {bg};
+    color: {fg};
+    border-radius: {radius_row};
+}}
+.card textview, .card textview text {{
+    background-color: {raised};
+}}
+
+/* A bare ScrolledWindow has no background of its own either — the same gap,
+   one layer out. Painting it here means a list that has not yet been given
+   `.card` still shows the content plane instead of nothing. */
+scrolledwindow, list, .boxed-list {{
+    background-color: {bg};
+}}
+
 /* Lists carry the density: padding on the row, not margins on its children,
-   so a change here moves every view at once. */
+   so a change here moves every view at once. Content-area rows stay
+   edge-to-edge on purpose — only the sidebar gets an inset selection, below. */
 listview > row, list > row, row.activatable {{
     padding-top: {pad}px;
     padding-bottom: {pad}px;
     padding-left: {gut}px;
     padding-right: {gut}px;
-    border-radius: {r}px;
+}}
+listview > row:not(:last-child), list > row:not(:last-child) {{
+    border-bottom: 1px solid {rule_soft};
 }}
 
-button {{ border-radius: {r}px; }}
-entry, .card, popover > contents {{ border-radius: {r}px; }}
+button {{ border-radius: {radius_control}; }}
+.card, popover > contents, dialog {{
+    border-radius: {radius_surface};
+    background-color: {raised};
+}}
 
 .navigation-sidebar {{ background-color: {bg_alt}; }}
 
+/* The macOS source-list look: a rounded highlight inset from the sidebar's
+   edges, not a full-bleed row. Higher specificity than the plain `row`
+   selectors above, so it wins without needing `!important`. */
+.navigation-sidebar row {{
+    margin-left: {gut}px;
+    margin-right: {gut}px;
+    border-radius: {radius_row};
+}}
+
 /* Diff colours are semantic, not accent — they must stay legible whichever
-   palette is loaded, so each theme supplies its own foreground too. */
+   palette is loaded, so each theme supplies its own foreground too. This is
+   the one definition; diff_view.rs must not duplicate it. */
 .diff-view .diff-added   {{ background-color: {add}; color: {add_fg}; }}
 .diff-view .diff-removed {{ background-color: {del}; color: {del_fg}; }}
 .diff-view .diff-hunk-header {{ color: {fg_dim}; font-weight: bold; }}
@@ -403,9 +402,11 @@ row.current {{ background-color: {accent_soft}; }}
         bg = p.bg,
         bg_alt = p.bg_alt,
         bar = p.bar,
+        raised = p.raised,
         fg = p.fg,
         fg_dim = p.fg_dim,
         rule = p.rule,
+        rule_soft = p.rule_soft,
         accent = p.accent,
         accent_fg = p.accent_fg,
         accent_soft = p.accent_soft,
@@ -413,6 +414,9 @@ row.current {{ background-color: {accent_soft}; }}
         del = p.del,
         add_fg = p.add_fg,
         del_fg = p.del_fg,
+        radius_control = RADIUS_CONTROL,
+        radius_surface = RADIUS_SURFACE,
+        radius_row = RADIUS_ROW,
     )
 }
 
@@ -518,18 +522,13 @@ mod tests {
     fn diff_colours_differ_from_the_accent() {
         // Semantic colour and brand colour are separate systems; an added line
         // tinted with the accent stops meaning "added".
-        for t in Theme::ALL {
-            let css = stylesheet(t, Font::Plex, Density::Default);
-            let accent = t.accent();
-            let added = css
-                .lines()
-                .find(|l| l.contains(".diff-added"))
-                .unwrap_or_default();
-            assert!(
-                !added.contains(accent),
-                "{t} tints additions with its accent"
-            );
-        }
+        let css = stylesheet(Theme::Forge, Font::Plex, Density::Default);
+        const ACCENT: &str = "#e07d45";
+        let added = css
+            .lines()
+            .find(|l| l.contains(".diff-added"))
+            .unwrap_or_default();
+        assert!(!added.contains(ACCENT), "diff-added is tinted with the accent");
     }
 
     #[test]
@@ -539,24 +538,42 @@ mod tests {
         assert!(tight.contains("padding-top: 3px"));
         assert!(roomy.contains("padding-top: 9px"));
         // The palette must not move when only density changes.
-        assert!(tight.contains("#f4f3f1") && roomy.contains("#f4f3f1"));
+        assert!(tight.contains("#1e1e1e") && roomy.contains("#1e1e1e"));
     }
 
     #[test]
-    fn each_theme_produces_a_distinct_stylesheet() {
-        let sheets: Vec<String> = Theme::ALL
-            .iter()
-            .map(|t| stylesheet(*t, Font::Plex, Density::Default))
-            .collect();
-        assert_ne!(sheets[0], sheets[1]);
-        assert_ne!(sheets[1], sheets[2]);
-        assert_ne!(sheets[0], sheets[2]);
+    fn textviews_and_entries_get_a_real_background_and_foreground() {
+        // The bug this whole pass started from: a plain GtkTextView paints
+        // its own text-node background, which nothing here set — so a
+        // comment box or the commit message editor rendered as an
+        // unreadable solid block regardless of which theme was loaded.
+        let css = stylesheet(Theme::Forge, Font::Plex, Density::Default);
+        let start = css
+            .find("textview, textview text, entry")
+            .expect("a textview/entry rule exists");
+        let end = css[start..].find('}').unwrap() + start;
+        let rule = &css[start..end];
+        assert!(rule.contains("background-color:"), "textview sets no background");
+        assert!(rule.contains("color:"), "textview sets no foreground");
     }
 
     #[test]
-    fn only_lane_is_dark_first() {
-        assert!(Theme::Lane.prefers_dark());
-        assert!(!Theme::Forge.prefers_dark());
-        assert!(!Theme::Ledger.prefers_dark());
+    fn sidebar_rows_are_inset_but_content_rows_stay_edge_to_edge() {
+        // The macOS source-list trait: only the sidebar's selection is a
+        // rounded, inset pill. A content-area list (History, the PR list)
+        // selects edge-to-edge, the way a real table view does.
+        let css = stylesheet(Theme::Forge, Font::Plex, Density::Default);
+        assert!(
+            css.contains(".navigation-sidebar row") && css.contains("margin-left:"),
+            "the sidebar has no inset selection"
+        );
+        let start = css
+            .find("listview > row, list > row, row.activatable")
+            .expect("the generic row rule exists");
+        let end = css[start..].find('}').unwrap() + start;
+        assert!(
+            !css[start..end].contains("margin"),
+            "content-area rows should stay edge-to-edge, not inherit a margin"
+        );
     }
 }
