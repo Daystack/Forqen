@@ -159,15 +159,11 @@ pub fn build_window(
 
     // Push is separated from fetch/pull because it is the only one that changes
     // someone else's copy of history; grouping it with read-only operations
-    // makes it too easy to hit by reflex.
+    // makes it too easy to hit by reflex. All three live in the navigation
+    // bar below, not here — see its construction further down.
     let push_btn = crate::commands::icon_button("send-to-symbolic", "Push to origin");
-    header.pack_end(&push_btn);
-
     let pull_btn = crate::commands::icon_button("document-save-symbolic", "Pull from origin");
-    header.pack_end(&pull_btn);
-
     let fetch_btn = crate::commands::icon_button("view-refresh-symbolic", "Fetch all remotes");
-    header.pack_end(&fetch_btn);
 
     // --- sidebar ------------------------------------------------------------
     let refs_list = gtk::ListBox::new();
@@ -317,11 +313,23 @@ pub fn build_window(
     );
     actions_page.set_visible(false);
 
+    // A second row, not a wider one: seven pages plus three transfer buttons
+    // never fit next to the window controls without the page labels
+    // truncating ("Pull R…") — which is what happened when the switcher lived
+    // in `header`'s own title slot. `set_show_*_title_buttons(false)` keeps
+    // this row from drawing a second set of minimise/maximise/close buttons;
+    // `header` above still owns those.
     let switcher = adw::ViewSwitcher::builder()
         .stack(&stack)
         .policy(adw::ViewSwitcherPolicy::Wide)
         .build();
-    header.set_title_widget(Some(&switcher));
+    let nav_bar = adw::HeaderBar::new();
+    nav_bar.set_show_start_title_buttons(false);
+    nav_bar.set_show_end_title_buttons(false);
+    nav_bar.set_title_widget(Some(&switcher));
+    nav_bar.pack_end(&push_btn);
+    nav_bar.pack_end(&pull_btn);
+    nav_bar.pack_end(&fetch_btn);
 
     // Status is re-read on entering the page rather than on a timer: polling
     // the working tree of a large repository every few seconds is real IO for
@@ -376,6 +384,7 @@ pub fn build_window(
 
     let content = adw::ToolbarView::new();
     content.add_top_bar(&header);
+    content.add_top_bar(&nav_bar);
     content.set_content(Some(&stack));
 
     // OverlaySplitView, not NavigationSplitView.
