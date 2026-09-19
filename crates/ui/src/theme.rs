@@ -528,7 +528,10 @@ mod tests {
             .lines()
             .find(|l| l.contains(".diff-added"))
             .unwrap_or_default();
-        assert!(!added.contains(ACCENT), "diff-added is tinted with the accent");
+        assert!(
+            !added.contains(ACCENT),
+            "diff-added is tinted with the accent"
+        );
     }
 
     #[test]
@@ -553,7 +556,10 @@ mod tests {
             .expect("a textview/entry rule exists");
         let end = css[start..].find('}').unwrap() + start;
         let rule = &css[start..end];
-        assert!(rule.contains("background-color:"), "textview sets no background");
+        assert!(
+            rule.contains("background-color:"),
+            "textview sets no background"
+        );
         assert!(rule.contains("color:"), "textview sets no foreground");
     }
 

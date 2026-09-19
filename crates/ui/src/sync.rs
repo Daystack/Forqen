@@ -188,8 +188,7 @@ pub fn clone(
                             overlay.add_toast(adw::Toast::new("Clone complete"));
                         }
                         (Err(message), _) => {
-                            let dialog =
-                                adw::AlertDialog::new(Some("Clone failed"), Some(message));
+                            let dialog = adw::AlertDialog::new(Some("Clone failed"), Some(message));
                             dialog.add_response("ok", "OK");
                             dialog.present(Some(&window));
                         }

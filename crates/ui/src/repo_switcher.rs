@@ -110,7 +110,12 @@ pub fn build_list(repos: &[KnownRepo], on_activate: Rc<dyn Fn(&Path)>) -> gtk::W
     }
 
     if !github.is_empty() {
-        root.append(&section("GitHub", &github, "applications-development-symbolic", &on_activate));
+        root.append(&section(
+            "GitHub",
+            &github,
+            "applications-development-symbolic",
+            &on_activate,
+        ));
     }
     if !other.is_empty() {
         root.append(&section("Other", &other, "folder-symbolic", &on_activate));
@@ -221,7 +226,11 @@ mod tests {
 
         let repos = classify([gh.clone(), other.clone(), none.clone(), not_a_repo.clone()]);
 
-        assert_eq!(repos.len(), 3, "the broken path must be dropped, not shown broken");
+        assert_eq!(
+            repos.len(),
+            3,
+            "the broken path must be dropped, not shown broken"
+        );
         assert!(repos.iter().all(|r| r.path != not_a_repo));
 
         assert_eq!(

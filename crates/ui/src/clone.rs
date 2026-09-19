@@ -73,7 +73,10 @@ fn default_dest(name: &str) -> PathBuf {
 /// the leaf directory is always the repository's own name, git creates it,
 /// and a destination that already exists and is non-empty is refused by git
 /// itself with a message this dialog surfaces rather than duplicates.
-fn path_row(window: &adw::ApplicationWindow, name_source: Rc<RefCell<String>>) -> (gtk::Box, gtk::Entry) {
+fn path_row(
+    window: &adw::ApplicationWindow,
+    name_source: Rc<RefCell<String>>,
+) -> (gtk::Box, gtk::Entry) {
     let row = gtk::Box::new(gtk::Orientation::Horizontal, 8);
     let entry = gtk::Entry::new();
     entry.set_hexpand(true);
@@ -215,10 +218,7 @@ fn build_mine_tab(
         let visible = visible.clone();
         let list = list.clone();
         clone_btn.connect_clicked(move |_| {
-            let index = list
-                .selected_row()
-                .map(|r| r.index())
-                .filter(|i| *i >= 0);
+            let index = list.selected_row().map(|r| r.index()).filter(|i| *i >= 0);
             let Some(repo) = index.and_then(|i| visible.borrow().get(i as usize).cloned()) else {
                 return;
             };
@@ -302,7 +302,11 @@ fn preferred_clone_url(repo: &Repository) -> String {
 
 // ── "URL" ─────────────────────────────────────────────────────────────────
 
-fn build_url_tab(window: &adw::ApplicationWindow, dialog: &adw::Dialog, on_cloned: Rc<dyn Fn(&Path)>) -> gtk::Widget {
+fn build_url_tab(
+    window: &adw::ApplicationWindow,
+    dialog: &adw::Dialog,
+    on_cloned: Rc<dyn Fn(&Path)>,
+) -> gtk::Widget {
     let root = gtk::Box::new(gtk::Orientation::Vertical, 12);
     root.set_margin_start(12);
     root.set_margin_end(12);
@@ -316,7 +320,9 @@ fn build_url_tab(window: &adw::ApplicationWindow, dialog: &adw::Dialog, on_clone
     root.append(&url_label);
 
     let url_entry = gtk::Entry::new();
-    url_entry.set_placeholder_text(Some("https://github.com/owner/repo or git@github.com:owner/repo.git"));
+    url_entry.set_placeholder_text(Some(
+        "https://github.com/owner/repo or git@github.com:owner/repo.git",
+    ));
     root.append(&url_entry);
 
     let path_label = gtk::Label::new(Some("Local Path"));

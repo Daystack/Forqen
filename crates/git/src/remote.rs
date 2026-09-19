@@ -909,7 +909,11 @@ mod tests {
         // the side effect through git's own local-transport internals is
         // fragile and depends on git-version-specific behaviour a unit test
         // should not need to know about.
-        let cmd = build_clone_command("--upload-pack=touch /tmp/pwned", Path::new("/tmp/dest"), None);
+        let cmd = build_clone_command(
+            "--upload-pack=touch /tmp/pwned",
+            Path::new("/tmp/dest"),
+            None,
+        );
         let args: Vec<&str> = cmd.get_args().map(|a| a.to_str().unwrap()).collect();
         let dashdash = args
             .iter()
@@ -928,8 +932,13 @@ mod tests {
         let dest = tempfile::tempdir().unwrap();
         std::fs::write(dest.path().join("already-here.txt"), "squatting\n").unwrap();
 
-        let err = clone(remote_dir.path().to_str().unwrap(), dest.path(), None, &mut noop)
-            .unwrap_err();
+        let err = clone(
+            remote_dir.path().to_str().unwrap(),
+            dest.path(),
+            None,
+            &mut noop,
+        )
+        .unwrap_err();
         assert!(
             err.to_string().contains("git clone failed"),
             "unexpected message: {err}"
