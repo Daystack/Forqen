@@ -7,7 +7,7 @@ description: |
   hunk- and line-level staging, conflict resolution, interactive rebase,
   pull request review, issues, notifications and Actions.
 
-  It is written in Rust and holds a flat memory curve over large histories —
+  It is written in Rust and holds a flat memory curve over large histories -
   scrolling the whole of git.git costs under two megabytes of resident memory,
   because commit rows are realized only for the visible window.
 

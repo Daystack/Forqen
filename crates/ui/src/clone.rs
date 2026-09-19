@@ -2,7 +2,7 @@
 //!
 //! Two tabs, matching the shape GitHub Desktop made the expected one: browse
 //! what the signed-in account already has write access to, or paste a URL for
-//! anything else — a colleague's fork, a non-GitHub host, a repository owned
+//! anything else - a colleague's fork, a non-GitHub host, a repository owned
 //! by someone else entirely.
 //!
 //! The actual transfer is `sync::clone`, which already carries the
@@ -20,7 +20,7 @@ use github::models::Repository;
 
 /// Present the clone dialog.
 ///
-/// `on_cloned` runs once a clone finishes successfully, with the local path —
+/// `on_cloned` runs once a clone finishes successfully, with the local path -
 /// the caller loads it exactly as it would any repository opened by hand.
 pub fn present(
     parent: &impl IsA<gtk::Widget>,
@@ -62,14 +62,14 @@ pub fn present(
 }
 
 /// Where a clone lands by default: the repository name under the user's home
-/// directory. Editable — this is a starting point, not a decision made for
+/// directory. Editable - this is a starting point, not a decision made for
 /// the user.
 fn default_dest(name: &str) -> PathBuf {
     glib::home_dir().join(name)
 }
 
 /// A "Local path" row shared by both tabs: an entry pre-filled with a default,
-/// and a "Choose…" button that lets the user pick the *parent* directory —
+/// and a "Choose…" button that lets the user pick the *parent* directory -
 /// the leaf directory is always the repository's own name, git creates it,
 /// and a destination that already exists and is non-empty is refused by git
 /// itself with a message this dialog surfaces rather than duplicates.
@@ -110,7 +110,7 @@ fn path_row(
     (row, entry)
 }
 
-/// Report a clone failure the way `sync::clone` does not need to — this
+/// Report a clone failure the way `sync::clone` does not need to - this
 /// dialog stays open on failure so the user can fix the path or URL and try
 /// again, unlike a transfer against a repository that is already loaded.
 fn report_error(window: &adw::ApplicationWindow, message: &str) {
@@ -181,7 +181,7 @@ fn build_mine_tab(
 
     // `repos` is the full fetched list; `visible` is whatever the search box
     // currently shows, in the same order as the list's rows. A row's index
-    // only means something against `visible` — once the search box has
+    // only means something against `visible` - once the search box has
     // filtered anything out, that index no longer lines up with `repos`.
     let visible: Rc<RefCell<Vec<Repository>>> = Rc::new(RefCell::new(Vec::new()));
 
@@ -256,7 +256,7 @@ fn build_mine_tab(
 }
 
 /// Rebuild `list` from the repositories matching `query`, and return that
-/// filtered subset in the same order the rows were added — a `ListBoxRow`'s
+/// filtered subset in the same order the rows were added - a `ListBoxRow`'s
 /// index only means something against whatever produced the rows currently
 /// showing, not against the unfiltered `repos`.
 fn populate_repo_list(list: &gtk::ListBox, repos: &[Repository], query: &str) -> Vec<Repository> {
@@ -285,7 +285,7 @@ fn populate_repo_list(list: &gtk::ListBox, repos: &[Repository], query: &str) ->
     matches
 }
 
-/// SSH when an agent is reachable, HTTPS otherwise — the same signal
+/// SSH when an agent is reachable, HTTPS otherwise - the same signal
 /// `remote::Remote::is_ssh` would end up inferring from the URL after the
 /// fact, checked here instead so the *choice* of URL is made once, up front.
 fn preferred_clone_url(repo: &Repository) -> String {
@@ -335,7 +335,7 @@ fn build_url_tab(
     let (path_row_box, path_entry) = path_row(window, derived_name.clone());
     root.append(&path_row_box);
 
-    // The path field tracks the URL until the user edits it directly — after
+    // The path field tracks the URL until the user edits it directly - after
     // that, typing a URL must not clobber a path they already chose.
     let path_touched = Rc::new(std::cell::Cell::new(false));
     {
@@ -351,7 +351,7 @@ fn build_url_tab(
             *derived_name.borrow_mut() = name.clone();
             if !path_touched.get() && !name.is_empty() {
                 path_entry.set_text(&default_dest(&name).to_string_lossy());
-                // set_text above fires connect_changed on path_entry too —
+                // set_text above fires connect_changed on path_entry too -
                 // this instance is the URL-driven one, so undo the flag it
                 // just set rather than let the derived update count as a
                 // manual edit.
@@ -390,7 +390,7 @@ fn build_url_tab(
 }
 
 /// The directory name git will use: the URL's last path segment, minus a
-/// trailing `.git` — the same rule git itself applies when no destination is
+/// trailing `.git` - the same rule git itself applies when no destination is
 /// given on the command line.
 fn repo_name_from_url(url: &str) -> String {
     url.trim_end_matches('/')

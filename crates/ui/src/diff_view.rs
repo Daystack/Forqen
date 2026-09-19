@@ -2,7 +2,7 @@
 //!
 //! Replaces the read-only source view. The engine has supported partial
 //! staging since `stage::stage_lines`, but with no way to express a selection
-//! the interface could only stage whole files — which is the one thing that
+//! the interface could only stage whole files - which is the one thing that
 //! makes a git GUI worth using over `git add`.
 //!
 //! Syntax highlighting is traded away for interactivity. GtkSourceView gives
@@ -262,7 +262,7 @@ impl DiffView {
             let Some(row) = self.store.item(i).and_downcast::<DiffRow>() else {
                 continue;
             };
-            // Selecting a hunk header means the whole hunk — it is the natural
+            // Selecting a hunk header means the whole hunk - it is the natural
             // reading of clicking the `@@` line, and it makes header rows
             // useful rather than inert.
             if row.kind() == RowKind::HunkHeader {
@@ -305,7 +305,7 @@ impl DiffView {
     ///
     /// GitHub anchors a comment with a line number *and a side*: LEFT means the
     /// pre-image, RIGHT the post-image. A removed line only exists on the left
-    /// and an added line only on the right, so the side is not a preference —
+    /// and an added line only on the right, so the side is not a preference -
     /// picking the wrong one is rejected as a line that does not exist.
     ///
     /// A context line exists on both; RIGHT is the useful default, since that
@@ -414,7 +414,7 @@ fn text_column() -> gtk::ColumnViewColumn {
         }
 
         // A context line cannot be staged on its own, so it is not selectable.
-        // Hunk headers stay selectable — selecting one means the whole hunk.
+        // Hunk headers stay selectable - selecting one means the whole hunk.
         item.set_selectable(row.kind().is_stageable() || row.kind() == RowKind::HunkHeader);
     });
 
@@ -427,7 +427,7 @@ fn text_column() -> gtk::ColumnViewColumn {
 
 // Diff row colours live in `theme::stylesheet()` alone. This used to carry a
 // second, competing definition of the same selectors against libadwaita's
-// generic @success_color/@error_color — not this app's palette — so the two
+// generic @success_color/@error_color - not this app's palette - so the two
 // stylesheets fought over `.diff-view .diff-added`/`.diff-removed` every time
 // both loaded, which they always did.
 

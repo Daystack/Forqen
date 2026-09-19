@@ -1,7 +1,7 @@
-//! Blame — who last changed each line, and which pull request brought it.
+//! Blame - who last changed each line, and which pull request brought it.
 //!
-//! The question blame actually gets asked is not "who wrote this" — the name
-//! is rarely the point, and often the person has left — but "why". The answer
+//! The question blame actually gets asked is not "who wrote this" - the name
+//! is rarely the point, and often the person has left - but "why". The answer
 //! lives in the pull request discussion, so selecting a line looks up the pull
 //! requests that introduced its commit.
 //!
@@ -47,7 +47,7 @@ impl BlameDialog {
         let window = adw::Window::builder()
             .transient_for(parent)
             .modal(true)
-            .title(format!("Blame — {path}"))
+            .title(format!("Blame - {path}"))
             .default_width(900)
             .default_height(600)
             .build();
@@ -184,7 +184,7 @@ impl BlameDialog {
 /// Render a unix timestamp as a date.
 ///
 /// Days since the epoch converted with the civil-from-days algorithm rather
-/// than pulling in `chrono` for one label — the whole dependency for a single
+/// than pulling in `chrono` for one label - the whole dependency for a single
 /// `YYYY-MM-DD` is not worth its compile time.
 pub fn format_time(secs: i64) -> String {
     let days = secs.div_euclid(86_400);
@@ -307,7 +307,7 @@ mod tests {
 
     #[test]
     fn leap_days_are_handled() {
-        // 2024-02-29 — the case a hand-rolled date conversion gets wrong.
+        // 2024-02-29 - the case a hand-rolled date conversion gets wrong.
         assert_eq!(format_time(1_709_164_800), "2024-02-29");
         assert_eq!(format_time(1_709_251_200), "2024-03-01");
     }

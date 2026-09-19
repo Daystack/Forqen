@@ -4,7 +4,7 @@
 //!
 //! Transport is the strongest case for shelling out. `git fetch` and `git push`
 //! negotiate packs, honour `url.*.insteadOf`, run `pre-push` hooks, respect
-//! proxy configuration, drive `git-lfs` filters, and speak to ssh-agent — all
+//! proxy configuration, drive `git-lfs` filters, and speak to ssh-agent - all
 //! from the user's own configuration. gix implements the protocol but not that
 //! surrounding contract.
 //!
@@ -69,7 +69,7 @@ pub fn list(repo: &Repo) -> Result<Vec<Remote>, GitError> {
     let out = capture(repo, &["remote", "-v"])?;
     let text = String::from_utf8_lossy(&out);
 
-    // `remote -v` prints two lines per remote — one (fetch), one (push) — and
+    // `remote -v` prints two lines per remote - one (fetch), one (push) - and
     // they can differ when pushurl is set.
     let mut by_name: HashMap<String, Remote> = HashMap::new();
     for line in text.lines() {
@@ -187,7 +187,7 @@ pub fn has_upstream(repo: &Repo, branch: &str) -> bool {
 /// Apply the token credential helper and the no-prompt guard shared by every
 /// transfer command.
 ///
-/// Token via env, never argv — `/proc/<pid>/cmdline` is world-readable. And
+/// Token via env, never argv - `/proc/<pid>/cmdline` is world-readable. And
 /// never block on an interactive prompt: with no usable credential, git would
 /// otherwise sit waiting for a terminal that does not exist and the operation
 /// would appear to hang.
@@ -206,7 +206,7 @@ fn apply_credentials(cmd: &mut Command, token: Option<&str>) {
 /// than `\n`, so this reads bytes and splits on both. A line-based reader shows
 /// nothing until the transfer finishes.
 ///
-/// Shared by fetch, pull, push and clone — the streaming is identical
+/// Shared by fetch, pull, push and clone - the streaming is identical
 /// regardless of which one is running; only how `cmd` was built differs, and
 /// `op` names the failing operation in the error rather than guessing it back
 /// out of the command line.
@@ -267,18 +267,18 @@ fn run_with_progress(
 
 /// Clone `url` into `dest`, which must not already exist.
 ///
-/// No `Repo` exists yet to call this on — that is the whole point — so unlike
+/// No `Repo` exists yet to call this on - that is the whole point - so unlike
 /// `fetch`/`pull`/`push` this builds its own bare command rather than going
 /// through `run_with_progress`. On success the caller opens `dest` with
 /// `Repo::open` exactly as it would any other repository.
 ///
-/// `url` and `dest` reach here as free text typed into the clone dialog —
+/// `url` and `dest` reach here as free text typed into the clone dialog -
 /// nothing else in this module takes an argument that direct. A value like
 /// `--upload-pack=/bin/sh` typed into the URL field is a valid-looking
 /// argument to `git clone`, not a valid-looking URL, unless something tells
 /// git where the flags end. `--` is that something: everything after it is
 /// positional no matter what it starts with, which is the standard git-level
-/// fix for this rather than trying to enumerate safe URL shapes ourselves —
+/// fix for this rather than trying to enumerate safe URL shapes ourselves -
 /// an allowlist would also have to admit scp-style `user@host:path` and bare
 /// local filesystem paths, both legitimate clone sources with no scheme.
 pub fn clone(
@@ -290,7 +290,7 @@ pub fn clone(
     stream_progress(build_clone_command(url, dest, token), "clone", progress)
 }
 
-/// Build the `git clone` command without running it — split out from
+/// Build the `git clone` command without running it - split out from
 /// `clone()` so the argument order is something a test can inspect directly
 /// via `Command::get_args()`, rather than only provable by trying to trigger
 /// a side effect through git's own local-transport internals, which is
@@ -377,7 +377,7 @@ fn capture(repo: &Repo, args: &[&str]) -> Result<Vec<u8>, GitError> {
 /// remotes nobody prunes, breaks when the fork is deleted or renamed, and needs
 /// separate credentials for a private fork. `refs/pull/*` lives on the
 /// repository the user already has access to, so one refspec covers same-repo
-/// branches and forks alike — including forks that have since been deleted,
+/// branches and forks alike - including forks that have since been deleted,
 /// where the fork remote would not resolve at all.
 ///
 /// The local branch is namespaced (`pr/<n>`) because two open pull requests
@@ -392,7 +392,7 @@ pub fn fetch_pull_request(
 ) -> Result<(), GitError> {
     let refspec = format!("refs/pull/{number}/head:refs/heads/{local_branch}");
     // `--force` so re-fetching an updated pull request moves the local branch
-    // instead of refusing on a non-fast-forward — a rebased PR is the normal
+    // instead of refusing on a non-fast-forward - a rebased PR is the normal
     // case, not an error.
     run_with_progress(
         repo,
@@ -834,7 +834,7 @@ mod tests {
         let clone = Repo::open(clone_dir.path()).unwrap();
         fetch_pull_request(&clone, "origin", 9, "pr/9", None, &mut noop).unwrap();
 
-        // The contributor rebases and force-pushes — the normal case.
+        // The contributor rebases and force-pushes - the normal case.
         seed("rewritten version");
         fetch_pull_request(&clone, "origin", 9, "pr/9", None, &mut noop)
             .expect("a rebased pull request must not fail on non-fast-forward");
@@ -869,7 +869,7 @@ mod tests {
         .unwrap();
 
         // A same-filesystem local clone hardlinks objects instead of
-        // transferring them, so git may report no progress lines at all —
+        // transferring them, so git may report no progress lines at all -
         // that streaming path is already covered against synthetic data
         // above. What this proves is the part local clones cannot skip: a
         // working repository with the source's history and its own remote.
@@ -900,12 +900,12 @@ mod tests {
     #[test]
     fn clone_command_puts_end_of_options_before_the_url_and_destination() {
         // `url` and `dest` reach `clone()` as free text typed into the clone
-        // dialog — nothing else in this module takes an argument that direct.
+        // dialog - nothing else in this module takes an argument that direct.
         // Without `--` before them, a value like `--upload-pack=/bin/sh`
         // typed into the URL field is not a malformed URL to git, it is a
         // flag: `--upload-pack` names an arbitrary command git runs on the
         // "remote" side for a local-path transport. Checked by inspecting
-        // the built `Command` directly — trying to prove this by triggering
+        // the built `Command` directly - trying to prove this by triggering
         // the side effect through git's own local-transport internals is
         // fragile and depends on git-version-specific behaviour a unit test
         // should not need to know about.

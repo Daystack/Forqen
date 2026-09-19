@@ -297,7 +297,7 @@ impl PullsView {
         // than no list, because it silently hides a PR opened five minutes ago.
         self.status.set_text(&match (pulls.len(), provenance) {
             (0, _) => "No open pull requests".to_string(),
-            (n, Provenance::OfflineCache) => format!("{n} open — offline, showing cached data"),
+            (n, Provenance::OfflineCache) => format!("{n} open - offline, showing cached data"),
             (n, Provenance::Revalidated) => format!("{n} open"),
             (n, Provenance::Fresh) => format!("{n} open"),
         });
@@ -440,7 +440,7 @@ impl PullsView {
         match &file.patch {
             Some(patch) => {
                 // GitHub sends the hunks without the `diff --git` header, so
-                // one is synthesised — the parser keys off it to start a file,
+                // one is synthesised - the parser keys off it to start a file,
                 // and the staging code needs it verbatim if this ever becomes
                 // an apply target.
                 let old = file.previous_filename.as_deref().unwrap_or(&file.filename);

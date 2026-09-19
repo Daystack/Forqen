@@ -7,7 +7,7 @@
 //! means sorting, grouping and guessing at the ones whose parent has been
 //! deleted. GraphQL's `reviewThreads` returns them already threaded, already
 //! marked resolved or outdated, and lets one request fetch the PR, its files,
-//! its threads and its checks together — five round trips against a rate limit
+//! its threads and its checks together - five round trips against a rate limit
 //! that is shared with everything else the app is doing.
 
 use serde::{Deserialize, Serialize};
@@ -37,7 +37,7 @@ pub struct PullRef {
     #[serde(rename = "ref")]
     pub branch: String,
     pub sha: String,
-    /// Absent when the fork the PR came from has been deleted — which happens,
+    /// Absent when the fork the PR came from has been deleted - which happens,
     /// and is why this cannot be assumed present.
     pub repo: Option<PullRepo>,
 }
@@ -152,7 +152,7 @@ impl Client {
         .await
     }
 
-    /// One pull request, with the fields the list omits — `mergeable`,
+    /// One pull request, with the fields the list omits - `mergeable`,
     /// `additions`, `deletions`, `changed_files`.
     pub async fn pull(
         &self,
@@ -239,8 +239,8 @@ struct AssociatedConnection {
 impl Client {
     /// Pull requests that introduced a commit.
     ///
-    /// The question blame actually gets asked: not "who wrote this line" — the
-    /// name is rarely the point — but "why", and the discussion on the pull
+    /// The question blame actually gets asked: not "who wrote this line" - the
+    /// name is rarely the point - but "why", and the discussion on the pull
     /// request is where the why lives.
     ///
     /// A commit reaching a branch directly belongs to no pull request, which is
@@ -276,7 +276,7 @@ impl Client {
 pub fn parse_remote(url: &str) -> Option<(String, String)> {
     let trimmed = url.trim().trim_end_matches('/');
     let path = match trimmed.split_once("://") {
-        // https://host/owner/name — drop the scheme, then the host.
+        // https://host/owner/name - drop the scheme, then the host.
         Some((_, rest)) => rest.split_once('/')?.1,
         // git@host:owner/name
         None => trimmed.split_once(':')?.1,
@@ -396,7 +396,7 @@ mod tests {
     #[test]
     fn a_minimal_pull_request_payload_deserializes() {
         // The list endpoint omits mergeable, additions, deletions and
-        // changed_files entirely — they must be optional, not defaulted to zero.
+        // changed_files entirely - they must be optional, not defaulted to zero.
         let json = r#"{
             "number": 1,
             "title": "Hello",

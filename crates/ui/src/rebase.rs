@@ -4,8 +4,8 @@
 //! and an end, and it rewrites the history every other view is showing.
 //!
 //! Reordering is done with buttons, not drag-and-drop. Dragging looks better in
-//! a screenshot, but a rebase plan is a keyboard-shaped task — the same hands
-//! that typed the commits reorder them — and a drag target that misses by four
+//! a screenshot, but a rebase plan is a keyboard-shaped task - the same hands
+//! that typed the commits reorder them - and a drag target that misses by four
 //! pixels silently reorders the wrong pair.
 
 use std::cell::RefCell;
@@ -60,7 +60,7 @@ impl RebaseDialog {
         start_btn.add_css_class("suggested-action");
 
         // Only meaningful once a rebase has stopped, so they begin hidden
-        // rather than merely insensitive — three dead buttons on first open
+        // rather than merely insensitive - three dead buttons on first open
         // would suggest the dialog is broken.
         let continue_btn = gtk::Button::with_label("Continue");
         continue_btn.add_css_class("suggested-action");
@@ -199,7 +199,7 @@ impl RebaseDialog {
                     s.action = picked;
                 }
                 // Rebuilding re-runs validation, which is what decides whether
-                // Start is live — the reason this is not just a label update.
+                // Start is live - the reason this is not just a label update.
                 this.rebuild();
             });
         }
@@ -319,7 +319,7 @@ enum Step {
 /// One line describing what the plan will do.
 pub fn summary_line(total: usize, folds: usize, drops: usize) -> String {
     // Saturating: a caller passing more drops than commits is nonsense, but it
-    // must render a wrong number rather than panic — this runs on every
+    // must render a wrong number rather than panic - this runs on every
     // keystroke in the action dropdowns.
     let kept = total.saturating_sub(drops);
     let resulting = kept.saturating_sub(folds);

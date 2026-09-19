@@ -1,14 +1,14 @@
 //! Fetch, pull and push from the UI, with live progress.
 //!
 //! Threading: a transfer is a blocking child process, so it runs on a plain
-//! `std::thread` rather than on the tokio runtime — a subprocess that streams
+//! `std::thread` rather than on the tokio runtime - a subprocess that streams
 //! stderr for thirty seconds would occupy a runtime worker to no purpose.
 //! Progress crosses back over an `async_channel` and is applied on the glib
 //! main context, which is the only place widgets may be touched.
 //!
 //! The repository is re-opened inside the worker rather than shared. `Repo`
 //! holds a `gix::Repository`, which is not `Sync`, and sending one across a
-//! thread boundary would be both unsound and unnecessary — opening is cheap
+//! thread boundary would be both unsound and unnecessary - opening is cheap
 //! next to a network round trip.
 
 use std::path::PathBuf;
@@ -66,7 +66,7 @@ pub fn run(
             let repo = Repo::open(&repo_path).map_err(|e| e.to_string())?;
             let mut sink = |p: Progress| {
                 // A full channel means the UI is behind; dropping an
-                // intermediate progress frame is correct — the next one
+                // intermediate progress frame is correct - the next one
                 // supersedes it anyway.
                 let _ = tx.try_send(Update::Progress(p));
             };
@@ -123,7 +123,7 @@ pub fn run(
                         }
                         (Err(message), _) => {
                             // Transfer failures carry git's own diagnostics and
-                            // are usually actionable — a dialog, not a toast
+                            // are usually actionable - a dialog, not a toast
                             // that vanishes before it is read.
                             let dialog = adw::AlertDialog::new(
                                 Some(&format!("{} failed", op.label())),
@@ -147,7 +147,7 @@ pub fn run(
 ///
 /// A sibling to `run()` rather than a case inside it: every `Operation`
 /// re-opens an existing repository at `repo_path` before acting on it, and a
-/// clone has no repository to open yet — that is the operation. Threading and
+/// clone has no repository to open yet - that is the operation. Threading and
 /// the progress/toast machinery are otherwise identical, so this is
 /// deliberately the same shape read next to `run()`, not a fork of it.
 pub fn clone(

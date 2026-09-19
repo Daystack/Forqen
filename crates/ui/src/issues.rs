@@ -1,7 +1,7 @@
 //! The Issues page.
 //!
-//! Same shape as Pull Requests — list on the left, detail and conversation on
-//! the right — because they are the same activity from the user's side, and
+//! Same shape as Pull Requests - list on the left, detail and conversation on
+//! the right - because they are the same activity from the user's side, and
 //! two different layouts for reading a thread would be two things to learn.
 
 use std::cell::{Cell, RefCell};
@@ -17,7 +17,7 @@ use crate::pulls::Target;
 enum Msg {
     List(Result<Vec<Issue>, String>),
     // Boxed: an Issue carries a dozen owned fields, so inlining it made this
-    // enum an order of magnitude larger than its other variants — every send
+    // enum an order of magnitude larger than its other variants - every send
     // would move that much whether or not it was a Detail.
     Detail(Result<Box<(Issue, Vec<IssueComment>)>, String>),
     Acted(Result<(), String>),
@@ -353,7 +353,7 @@ impl IssuesView {
                 this.comment_btn.set_sensitive(true);
                 match result {
                     Ok(()) => {
-                        // Cleared only once the server has it — the same rule
+                        // Cleared only once the server has it - the same rule
                         // as review drafts. Losing what someone wrote because a
                         // request failed is the one unforgivable failure here.
                         this.reply.buffer().set_text("");

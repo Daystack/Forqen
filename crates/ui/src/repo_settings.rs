@@ -153,11 +153,11 @@ impl RepoSettingsDialog {
             ("Repository".into(), s.full_name.clone()),
             (
                 "Description".into(),
-                s.description.clone().unwrap_or_else(|| "—".into()),
+                s.description.clone().unwrap_or_else(|| "-".into()),
             ),
             (
                 "Default branch".into(),
-                s.default_branch.clone().unwrap_or_else(|| "—".into()),
+                s.default_branch.clone().unwrap_or_else(|| "-".into()),
             ),
             (
                 "Licence".into(),
@@ -173,7 +173,7 @@ impl RepoSettingsDialog {
             // the "why was my push rejected" case this screen exists for.
             rows.push((
                 "Archived".into(),
-                "yes — this repository is read-only".into(),
+                "yes - this repository is read-only".into(),
             ));
         }
 
@@ -182,7 +182,7 @@ impl RepoSettingsDialog {
         let protection_rows = match p.protected {
             None => vec![(
                 p.branch.clone(),
-                "unknown — either unprotected, or your token cannot read it".into(),
+                "unknown - either unprotected, or your token cannot read it".into(),
             )],
             Some(_) => {
                 let mut v = vec![(p.branch.clone(), "protected".to_string())];
@@ -204,8 +204,8 @@ impl RepoSettingsDialog {
 
         let collab_rows: Vec<(String, String)> = if collaborators.is_empty() {
             vec![(
-                "—".into(),
-                "not listed — needs push access to read".to_string(),
+                "-".into(),
+                "not listed - needs push access to read".to_string(),
             )]
         } else {
             collaborators

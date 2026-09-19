@@ -3,8 +3,8 @@
 //! The list endpoint has a trap: `/repos/{owner}/{repo}/issues` returns **pull
 //! requests as well**, because GitHub models a pull request as an issue with
 //! extra fields. The only marker is the presence of a `pull_request` object.
-//! A client that forgets shows every open PR twice — once under Issues and
-//! once under Pull Requests — and lets you "close" a PR from the wrong screen.
+//! A client that forgets shows every open PR twice - once under Issues and
+//! once under Pull Requests - and lets you "close" a PR from the wrong screen.
 //! Filtering is done here so no caller has to remember.
 
 use serde::{Deserialize, Serialize};

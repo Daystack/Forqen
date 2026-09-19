@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 /// Public client id of the forqen GitHub App.
 ///
 /// Deliberately not a secret. The device flow exists precisely so desktop apps
-/// need not ship a `client_secret` — one embedded in a distributed binary is
+/// need not ship a `client_secret` - one embedded in a distributed binary is
 /// readable with `strings` and is therefore not a secret at all.
 ///
 /// Set at build time so a fork or an Enterprise deployment can point at its own
@@ -25,7 +25,7 @@ use serde::{Deserialize, Serialize};
 /// ```
 ///
 /// The fallback is a placeholder, not a working id. Browser sign-in fails
-/// against it — see [`client_id_is_configured`], which the login dialog checks
+/// against it - see [`client_id_is_configured`], which the login dialog checks
 /// so the user gets an explanation instead of an opaque OAuth error.
 pub const CLIENT_ID: &str = match option_env!("FORQEN_CLIENT_ID") {
     Some(id) => id,
@@ -45,7 +45,7 @@ pub fn client_id_is_configured() -> bool {
 
 pub const DEFAULT_HOST: &str = "github.com";
 
-/// Scopes requested at login. `workflow` is deliberately absent — it is
+/// Scopes requested at login. `workflow` is deliberately absent - it is
 /// requested incrementally the first time the Actions view is opened.
 pub const BASE_SCOPES: &[&str] = &["repo", "read:org", "gist", "notifications", "user:email"];
 

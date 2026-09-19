@@ -17,7 +17,7 @@ github = { path = "crates/github" }
 db = { path = "crates/db" }
 ui = { path = "crates/ui" }
 
-# external — pinned exact on 0.x crates with churn (see plan: gix API churn risk)
+# external - pinned exact on 0.x crates with churn (see plan: gix API churn risk)
 # Default features stay on: disabling them drops gix-hash's hash-kind
 # selection and `gix_hash::Kind` compiles as an empty enum.
 gix = { version = "=0.86.0", features = ["blame", "status"] }

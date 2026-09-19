@@ -72,7 +72,7 @@ pub(crate) mod tests {
     /// each commit writing `f.txt`.
     ///
     /// Built with `git fast-import` rather than a loop of `git add` + `git
-    /// commit`. Still the real git binary, so the fixture is unarguably valid —
+    /// commit`. Still the real git binary, so the fixture is unarguably valid -
     /// but one process instead of three per commit. At the sizes the eviction
     /// tests use that was ~1200 spawns, which was slow everywhere and flaky on
     /// CI: a 400-commit fixture intermittently produced a repository where the
@@ -96,8 +96,8 @@ pub(crate) mod tests {
 
         // Identity in the repository config, not only the environment.
         // fast-import and rebase spawn further git processes that do not
-        // inherit GIT_AUTHOR_*, so a machine with no global identity — every
-        // CI runner — fails where a developer's machine quietly succeeds.
+        // inherit GIT_AUTHOR_*, so a machine with no global identity - every
+        // CI runner - fails where a developer's machine quietly succeeds.
         for (key, value) in [
             ("user.name", "Fixture"),
             ("user.email", "fixture@example.invalid"),

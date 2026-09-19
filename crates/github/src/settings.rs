@@ -2,7 +2,7 @@
 //!
 //! Deliberately read-only. Changing branch protection or collaborator access
 //! from a git client is a rare, consequential act that belongs where its
-//! consequences are spelled out — and a client that offers it has to reproduce
+//! consequences are spelled out - and a client that offers it has to reproduce
 //! GitHub's permission model correctly or it will show buttons that fail.
 //! Showing the current state answers the question people actually have: "why
 //! was my push rejected".
@@ -69,7 +69,7 @@ pub struct Collaborator {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Protection {
     pub branch: String,
-    /// `None` when the endpoint answered 404 — either the branch is
+    /// `None` when the endpoint answered 404 - either the branch is
     /// unprotected or the token cannot read protection, and GitHub does not
     /// distinguish them. Saying "unknown" beats claiming "unprotected".
     pub protected: Option<bool>,
@@ -250,7 +250,7 @@ mod tests {
 
     #[test]
     fn unknown_protection_is_distinct_from_unprotected() {
-        // 404 means "no protection, or you may not read it" — GitHub does not
+        // 404 means "no protection, or you may not read it" - GitHub does not
         // distinguish. Claiming "unprotected" could tell someone their main
         // branch is open when it is not.
         let unknown = Protection {

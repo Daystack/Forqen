@@ -1,5 +1,5 @@
 #!/bin/sh
-# Skipped under Flatpak and distro packaging — both run these themselves, and
+# Skipped under Flatpak and distro packaging - both run these themselves, and
 # running them twice against a staged DESTDIR just fails noisily.
 if [ -n "$DESTDIR" ]; then
     exit 0

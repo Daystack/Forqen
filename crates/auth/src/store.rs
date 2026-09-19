@@ -27,7 +27,7 @@ fn classify(e: keyring::Error) -> AuthError {
 }
 
 pub fn save(account: &Account, token: &Token) -> Result<(), AuthError> {
-    // `Secret`'s Serialize is the real value — this is the one place that is
+    // `Secret`'s Serialize is the real value - this is the one place that is
     // intended, and it goes to the keyring, never to a log.
     let blob = serde_json::to_string(token).map_err(|e| AuthError::Malformed {
         host: account.host.clone(),
@@ -48,7 +48,7 @@ pub fn load(account: &Account) -> Result<Token, AuthError> {
     })
 }
 
-/// Remove stored credentials. Missing entries are not an error — logging out
+/// Remove stored credentials. Missing entries are not an error - logging out
 /// twice should succeed both times.
 pub fn delete(account: &Account) -> Result<(), AuthError> {
     match entry(account)?.delete_credential() {
@@ -71,7 +71,7 @@ mod tests {
     }
 
     /// Round-trips through the real Secret Service, so it is ignored by default
-    /// — CI has no session bus. Run locally with:
+    /// - CI has no session bus. Run locally with:
     ///   cargo test -p auth -- --ignored
     #[test]
     #[ignore = "requires a running Secret Service"]

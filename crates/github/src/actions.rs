@@ -2,7 +2,7 @@
 //!
 //! Logs are the awkward part. `/actions/jobs/{id}/logs` answers **302** with a
 //! short-lived redirect to blob storage, and that redirect URL is
-//! pre-authenticated — following it with an `Authorization` header attached
+//! pre-authenticated - following it with an `Authorization` header attached
 //! makes the storage backend reject the request. So logs are fetched with a
 //! client that does not redirect, and the `Location` is then fetched bare.
 
@@ -168,7 +168,7 @@ impl Client {
             // Logs expire, and a job that never started has none.
             return Err(GhError::Api {
                 status,
-                message: "no logs available for this job — they may have expired".into(),
+                message: "no logs available for this job - they may have expired".into(),
             });
         }
 

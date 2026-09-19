@@ -1,7 +1,7 @@
 //! The command palette.
 //!
 //! Every command in forqen is a `GAction` before it is a button, so the palette
-//! needs no separate dispatch path — it activates the same action the toolbar
+//! needs no separate dispatch path - it activates the same action the toolbar
 //! does, and an action that is disabled is disabled here too.
 //!
 //! Matching is subsequence-based rather than substring: typing `icr` should
@@ -29,7 +29,7 @@ pub struct Command {
 ///
 /// Higher is better. The rules, in order of weight:
 ///
-/// * every character of the query must appear in order — a subsequence, so
+/// * every character of the query must appear in order - a subsequence, so
 ///   `icr` matches "Interactive rebase";
 /// * a character matching the start of a word scores far more than one in the
 ///   middle, which is what makes initials rank above incidental letters;
@@ -90,7 +90,7 @@ pub fn rank(query: &str, commands: &[Command]) -> Vec<Command> {
         .filter_map(|c| score(query, &c.label).map(|s| (s, c)))
         .collect();
 
-    // Stable by label so equal scores do not shuffle between keystrokes —
+    // Stable by label so equal scores do not shuffle between keystrokes -
     // a list that reorders under the cursor is how the wrong thing gets run.
     scored.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| a.1.label.cmp(&b.1.label)));
     scored.into_iter().map(|(_, c)| c.clone()).collect()

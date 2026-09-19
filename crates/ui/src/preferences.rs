@@ -44,7 +44,7 @@ pub fn present(
 
     // No theme picker: forqen ships one considered dark theme rather than a
     // choice between several. `current()` still returns a `Theme` because
-    // `apply_appearance` needs one to pass to `theme::stylesheet` — there is
+    // `apply_appearance` needs one to pass to `theme::stylesheet` - there is
     // just nothing here to let the user change it to.
 
     // ── typeface ─────────────────────────────────────────────────────────
@@ -52,7 +52,7 @@ pub fn present(
     font_group.set_title("Typeface");
     font_group.set_description(Some(
         "IBM Plex ships with forqen. Others appear only when your system has \
-         them — a missing family would fall back without saying so.",
+         them - a missing family would fall back without saying so.",
     ));
 
     // Offer only what will actually render. A dropdown entry that silently
@@ -76,7 +76,7 @@ pub fn present(
         let row = adw::ActionRow::new();
         row.set_title("Not installed");
         row.set_subtitle(&format!(
-            "{} — install the family to enable it here.",
+            "{} - install the family to enable it here.",
             missing.join(", ")
         ));
         row.set_sensitive(false);

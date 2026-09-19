@@ -2,7 +2,7 @@
 //!
 //! This module is the foundation of hunk- and line-level staging, not just of
 //! the diff viewer. Staging part of a file means handing git a patch containing
-//! exactly the selected changes — so the parser must round-trip: whatever it
+//! exactly the selected changes - so the parser must round-trip: whatever it
 //! reads, it must be able to write back in a form `git apply` accepts.
 //!
 //! Diffs come from the `git` binary rather than from gix. The viewer could use
@@ -20,9 +20,9 @@ use crate::{GitError, Repo};
 /// Which tree the diff is taken against.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DiffSource {
-    /// Working tree vs index — the unstaged changes.
+    /// Working tree vs index - the unstaged changes.
     Unstaged,
-    /// Index vs HEAD — the staged changes.
+    /// Index vs HEAD - the staged changes.
     Staged,
 }
 
@@ -69,7 +69,7 @@ pub struct Hunk {
     pub old_count: u32,
     pub new_start: u32,
     pub new_count: u32,
-    /// Text after the `@@` marker — usually the enclosing function.
+    /// Text after the `@@` marker - usually the enclosing function.
     pub section: String,
     pub lines: Vec<DiffLine>,
 }
@@ -110,7 +110,7 @@ pub struct FileDiff {
     /// Header lines between `diff --git` and the first `@@`, verbatim.
     ///
     /// Kept exactly as git emitted them because a synthesized patch must carry
-    /// them unchanged — reconstructing `index`, `similarity index`, or mode
+    /// them unchanged - reconstructing `index`, `similarity index`, or mode
     /// lines by hand is how `git apply` starts rejecting patches.
     pub header: Vec<String>,
     pub hunks: Vec<Hunk>,
@@ -160,7 +160,7 @@ pub fn diff(
         ));
     }
 
-    // Diff output is not guaranteed UTF-8 — a file can hold arbitrary bytes.
+    // Diff output is not guaranteed UTF-8 - a file can hold arbitrary bytes.
     // Lossy conversion keeps the viewer working on such a file instead of
     // failing the whole refresh; the staging path refuses non-UTF-8 separately.
     Ok(parse(&String::from_utf8_lossy(&out.stdout)))
@@ -201,7 +201,7 @@ pub fn parse(text: &str) -> Vec<FileDiff> {
                 file.is_binary = true;
             }
             // `rename from`/`rename to` are authoritative where the
-            // `diff --git a/x b/y` line is ambiguous — a path containing " b/"
+            // `diff --git a/x b/y` line is ambiguous - a path containing " b/"
             // cannot be split reliably.
             if let Some(p) = line.strip_prefix("rename from ") {
                 file.old_path = p.to_string();
@@ -264,7 +264,7 @@ fn count_side(hunk: &Hunk, old: bool) -> u32 {
 
 /// Split `a/path b/path` from a `diff --git` line.
 ///
-/// Ambiguous by construction when a path contains a space — git quotes such
+/// Ambiguous by construction when a path contains a space - git quotes such
 /// paths, but only when it must. The `rename from`/`rename to` lines that
 /// follow are authoritative and override whatever this guesses.
 fn split_diff_paths(rest: &str) -> (String, String) {

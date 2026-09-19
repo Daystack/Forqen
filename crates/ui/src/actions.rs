@@ -1,6 +1,6 @@
 //! The Actions page: workflow runs, their jobs, and job logs.
 //!
-//! A CI page earns its place by answering one question quickly — *what broke* —
+//! A CI page earns its place by answering one question quickly - *what broke* -
 //! so the failing job is preselected and its log is fetched with it. Landing on
 //! a list of green ticks and making the user hunt for the red one is what the
 //! web page already does.
@@ -593,7 +593,7 @@ mod tests {
 
     #[test]
     fn every_state_has_a_glyph_and_none_repeat_across_pass_and_fail() {
-        // Colour alone is not enough — about one man in twelve cannot rely on
+        // Colour alone is not enough - about one man in twelve cannot rely on
         // it, and "did CI pass" must not be one of those questions.
         assert_eq!(glyph("success"), "✓");
         assert_eq!(glyph("failure"), "✗");

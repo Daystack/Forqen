@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   Symbolic variant: 16px grid, single colour, recoloured by the theme at
-  runtime. Must stay one flat path set with no opacity — symbolic icons are
+  runtime. Must stay one flat path set with no opacity - symbolic icons are
   masked, so anything semi-transparent renders as a smudge.
 -->
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">

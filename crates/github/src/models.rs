@@ -2,7 +2,7 @@
 //!
 //! Deliberately partial: only fields forqen renders are declared. Serde ignores
 //! the rest, which means a new field in a GitHub response is a no-op here
-//! rather than a deserialization failure — and the cached bodies stay small
+//! rather than a deserialization failure - and the cached bodies stay small
 //! because we never re-serialize what we did not ask for.
 
 use serde::{Deserialize, Serialize};
@@ -77,7 +77,7 @@ mod tests {
         assert_eq!(r.full_name, "Daystack/Forqen");
         assert_eq!(r.default_branch.as_deref(), Some("main"));
         assert_eq!(r.description, None);
-        // Not present in the payload at all — must default to None, not fail.
+        // Not present in the payload at all - must default to None, not fail.
         assert_eq!(r.stargazers_count, None);
     }
 

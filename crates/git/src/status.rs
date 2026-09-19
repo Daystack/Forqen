@@ -2,7 +2,7 @@
 //!
 //! Read from `git status --porcelain=v2 -z` rather than from `gix-status`.
 //!
-//! The plan called for gix here, and gix would be faster — it avoids a process
+//! The plan called for gix here, and gix would be faster - it avoids a process
 //! spawn per refresh. Porcelain v2 wins anyway because it is a *documented,
 //! stable* format that reflects the user's own configuration: `core.ignorecase`,
 //! `core.autocrlf`, `.gitattributes` filters, rename detection thresholds, and
@@ -59,7 +59,7 @@ pub struct StatusEntry {
     pub index: Change,
     /// Change in the working tree, not yet staged.
     pub worktree: Change,
-    /// Both sides modified — a merge conflict.
+    /// Both sides modified - a merge conflict.
     pub conflicted: bool,
     pub untracked: bool,
     pub ignored: bool,
@@ -135,7 +135,7 @@ pub fn parse(bytes: &[u8]) -> Status {
     let mut status = Status::default();
 
     // Records are NUL-separated, but a rename record contains *two* paths
-    // separated by an extra NUL — so records cannot simply be split and mapped.
+    // separated by an extra NUL - so records cannot simply be split and mapped.
     let mut fields = bytes.split(|b| *b == 0).peekable();
 
     while let Some(raw) = fields.next() {
@@ -208,7 +208,7 @@ fn parse_header(record: &str, status: &mut Status) {
     }
 }
 
-/// `1 <XY> <sub> <mH> <mI> <mW> <hH> <hI> <path>` — and `2` adds a score field.
+/// `1 <XY> <sub> <mH> <mI> <mW> <hH> <hI> <path>` - and `2` adds a score field.
 fn parse_ordinary(record: &str) -> Option<StatusEntry> {
     let is_rename = record.starts_with('2');
     let mut parts = record.splitn(if is_rename { 10 } else { 9 }, ' ');

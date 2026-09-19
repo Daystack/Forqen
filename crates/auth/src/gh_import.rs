@@ -6,7 +6,7 @@
 //! The imported token is a *GitHub CLI* OAuth token: it does not expire and has
 //! no refresh token, so [`Token::needs_refresh`] correctly reports false for it.
 //! Its scopes are whatever `gh` was granted, which may be narrower than
-//! [`crate::BASE_SCOPES`] — the caller should verify before relying on one.
+//! [`crate::BASE_SCOPES`] - the caller should verify before relying on one.
 
 use std::process::Command;
 
@@ -14,7 +14,7 @@ use crate::{AuthError, Secret, Token};
 
 /// Read the token `gh` holds for `host`, if any.
 ///
-/// Returns `Ok(None)` when `gh` is absent or not logged in to that host — both
+/// Returns `Ok(None)` when `gh` is absent or not logged in to that host - both
 /// are ordinary states on a fresh machine, not failures.
 pub fn token_for(host: &str) -> Result<Option<Secret>, AuthError> {
     let out = match Command::new("gh")

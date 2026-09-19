@@ -1,7 +1,7 @@
 //! Gists: look at the ones you have, make a new one from a file.
 //!
 //! Creating is the useful half. The common path is "I want to share this
-//! file" — so the dialog prefills from whatever the Changes page is showing,
+//! file" - so the dialog prefills from whatever the Changes page is showing,
 //! rather than starting from an empty box.
 
 use std::cell::{Cell, RefCell};
@@ -35,7 +35,7 @@ pub struct GistsDialog {
 
 impl GistsDialog {
     /// `prefill` is an optional (filename, content) pair to start a new gist
-    /// from — normally the file open in the Changes page.
+    /// from - normally the file open in the Changes page.
     pub fn present(
         parent: &impl IsA<gtk::Window>,
         target: Target,
@@ -210,7 +210,7 @@ impl GistsDialog {
         description.set_placeholder_text(Some("Description (optional)"));
 
         let filename = gtk::Entry::new();
-        filename.set_placeholder_text(Some("Filename — the extension sets the highlighting"));
+        filename.set_placeholder_text(Some("Filename - the extension sets the highlighting"));
 
         let content = gtk::TextView::new();
         content.set_monospace(true);
@@ -228,7 +228,7 @@ impl GistsDialog {
 
         // Secret by default. A gist made by accident should not be indexed;
         // making it public is a deliberate act.
-        let public = gtk::CheckButton::with_label("Public — listed on your profile and indexed");
+        let public = gtk::CheckButton::with_label("Public - listed on your profile and indexed");
 
         let boxed = gtk::Box::new(gtk::Orientation::Vertical, 8);
         boxed.append(&description);

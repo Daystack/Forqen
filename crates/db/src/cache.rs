@@ -1,6 +1,6 @@
 //! HTTP revalidation cache.
 //!
-//! The point is not to avoid the round trip — it is to avoid the *rate limit*.
+//! The point is not to avoid the round trip - it is to avoid the *rate limit*.
 //! GitHub excludes `304 Not Modified` from the primary rate limit, so a request
 //! carrying `If-None-Match` costs latency but no budget. Polling notifications
 //! every 60 seconds is affordable only because of this.

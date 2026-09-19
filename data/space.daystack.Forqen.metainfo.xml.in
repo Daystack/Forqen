@@ -18,8 +18,8 @@
   <description>
     <p>
       forqen is a native desktop git client for Linux that covers both local git
-      work and the parts of GitHub people use daily — pull request review,
-      issues, Actions and notifications — without a browser and without a
+      work and the parts of GitHub people use daily - pull request review,
+      issues, Actions and notifications - without a browser and without a
       bundled web engine.
     </p>
     <p>Local git:</p>

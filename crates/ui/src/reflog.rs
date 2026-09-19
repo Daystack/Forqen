@@ -1,4 +1,4 @@
-//! The reflog browser — "undo anything".
+//! The reflog browser - "undo anything".
 //!
 //! git already records every position HEAD has held. What is missing in every
 //! client is a way to *read* it without knowing it exists, so a bad reset or a
@@ -49,7 +49,7 @@ impl ReflogDialog {
         restore_btn.add_css_class("destructive-action");
         restore_btn.set_sensitive(false);
 
-        // A reflog is mostly noise — every checkout and commit appears. The
+        // A reflog is mostly noise - every checkout and commit appears. The
         // filter defaults on, because someone opening this is looking for the
         // moment before something went wrong, not a complete log.
         let only_recovery = gtk::CheckButton::with_label("Only show resets, rebases and merges");

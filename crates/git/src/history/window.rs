@@ -1,4 +1,4 @@
-//! The windowed commit model — the single decision that sets forqen's memory
+//! The windowed commit model - the single decision that sets forqen's memory
 //! ceiling.
 //!
 //! A naive client collects `Vec<CommitRow>` for the whole history. On
@@ -9,10 +9,10 @@
 //!
 //! Two structures, deliberately different in cost:
 //!
-//! * **the spine** — `Vec<ObjectId>`, 20 inline bytes per commit, grows as the
+//! * **the spine** - `Vec<ObjectId>`, 20 inline bytes per commit, grows as the
 //!   walk proceeds and is never evicted. ~26MB at 1.3M commits. This is what
 //!   makes `row(i)` O(1) and lets the scrollbar jump anywhere.
-//! * **realized rows** — `HashMap<usize, CommitRow>`, capped at [`Self::budget`]
+//! * **realized rows** - `HashMap<usize, CommitRow>`, capped at [`Self::budget`]
 //!   entries. These hold the strings, so these are what eviction targets.
 
 use std::collections::HashMap;
@@ -97,7 +97,7 @@ impl HistoryWindow {
     ///
     /// Takes the walker by value and refuses to run on a non-empty spine, both
     /// deliberately. The earlier signature accepted `&mut Walker` plus a row
-    /// target so the spine could be built across several calls — but a `Walker`
+    /// target so the spine could be built across several calls - but a `Walker`
     /// borrows its repository and cannot outlive one call, so callers built a
     /// *fresh* walker each time. A fresh walker restarts at HEAD, so every call
     /// re-appended ids from the beginning: the spine filled with duplicates and
@@ -164,7 +164,7 @@ impl HistoryWindow {
     /// from the current viewport and the furthest go first, so what survives is
     /// a band centred on what the user is looking at.
     ///
-    /// The obvious alternative — pure FIFO on realization order — is shorter but
+    /// The obvious alternative - pure FIFO on realization order - is shorter but
     /// thrashes on direction change: the rows just scrolled past are the oldest,
     /// so they are evicted first, and scrolling back up re-hydrates every one of
     /// them. Ranking by distance instead of age costs nothing extra in memory
@@ -176,7 +176,7 @@ impl HistoryWindow {
     /// core rather than as a crash, which is considerably harder to diagnose.
     ///
     /// Cost is `O(n log n)` on the realized set, which is bounded by
-    /// `budget + 2 * OVERSCAN` — a few hundred entries, so a sort of tens of
+    /// `budget + 2 * OVERSCAN` - a few hundred entries, so a sort of tens of
     /// microseconds. If that ever shows up in a scroll profile, a
     /// `select_nth_unstable` partition gets it to `O(n)` without changing the
     /// policy.
@@ -197,7 +197,7 @@ impl HistoryWindow {
 
         // If the viewport alone exceeds the budget, this evicts every
         // non-visible row and stops. Going further would mean discarding rows
-        // GTK is actively drawing, so the budget yields to correctness — a
+        // GTK is actively drawing, so the budget yields to correctness - a
         // viewport that large is a misconfigured budget, not a runtime state to
         // handle silently.
         let excess = self.rows.len() - self.budget;
@@ -249,7 +249,7 @@ mod tests {
     /// Regression: the spine must never contain a commit twice.
     ///
     /// The previous API let a caller extend the spine from a freshly built
-    /// walker, which restarts at HEAD — every call re-appended the same ids.
+    /// walker, which restarts at HEAD - every call re-appended the same ids.
     /// It presented as unbounded RSS growth rather than as visibly duplicated
     /// rows, so this checks the data directly.
     #[test]
@@ -328,7 +328,7 @@ mod tests {
             for i in range {
                 assert!(
                     win.row(i).is_some(),
-                    "row {i} is in the viewport and must survive eviction — \
+                    "row {i} is in the viewport and must survive eviction - \
                      dropping it makes GTK re-request it forever"
                 );
             }

@@ -1,4 +1,4 @@
-//! forqen — a native GitHub client for Linux.
+//! forqen - a native GitHub client for Linux.
 
 mod cli;
 
@@ -19,7 +19,7 @@ fn main() -> std::process::ExitCode {
     let argv: Vec<std::ffi::OsString> = std::env::args_os().skip(1).collect();
 
     // A subcommand runs without ever opening a display, so this happens before
-    // any GTK setup — sign-in over SSH is one of the cases it exists for.
+    // any GTK setup - sign-in over SSH is one of the cases it exists for.
     if let Some(command) = cli::Command::parse(&argv) {
         init_logging();
         return command.run();
@@ -112,7 +112,7 @@ fn repo_from_args() -> Result<Option<PathBuf>, String> {
 
     match first.to_str() {
         Some("-h") | Some("--help") => {
-            println!("forqen — native GitHub client\n");
+            println!("forqen - native GitHub client\n");
             println!("usage: forqen [PATH]");
             println!("       forqen login   [--host HOST]   adopt the gh CLI's token");
             println!("       forqen logout  <login> [--host HOST]");
@@ -143,7 +143,7 @@ fn repo_from_args() -> Result<Option<PathBuf>, String> {
 /// to do with the data it holds.
 ///
 /// `MALLOC_ARENA_MAX` is read at the first `malloc`, which happens long before
-/// `main` — setting it here would do nothing. It is set instead in the
+/// `main` - setting it here would do nothing. It is set instead in the
 /// `.desktop` `Exec=` line and in the Flatpak manifest, and this check exists
 /// so a launch that bypassed both is visible in the log rather than silently
 /// costing 100MB.

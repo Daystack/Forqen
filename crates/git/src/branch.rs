@@ -193,7 +193,7 @@ fn run(repo: &Repo, args: &[&str]) -> Result<(), GitError> {
 ///
 /// Used to pick a sensible rebase base: the commits above the upstream are the
 /// ones not yet pushed, and therefore the ones it is safe to rewrite. A branch
-/// with no upstream returns `None` rather than guessing — offering to rewrite
+/// with no upstream returns `None` rather than guessing - offering to rewrite
 /// an entire history because nothing was configured is not a helpful default.
 pub fn upstream_of_head(repo: &Repo) -> Result<Option<String>, GitError> {
     let workdir = repo.workdir().unwrap_or_else(|| repo.git_dir());

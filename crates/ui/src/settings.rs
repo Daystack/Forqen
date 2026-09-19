@@ -1,6 +1,6 @@
 //! GSettings binding.
 //!
-//! The schema is the source of truth for defaults and ranges — duplicating them
+//! The schema is the source of truth for defaults and ranges - duplicating them
 //! in Rust would mean two places to change and one of them silently winning.
 //! Everything here reads from `gio::Settings`.
 
@@ -14,7 +14,7 @@ use crate::APP_ID;
 /// Returns `None` when the schema is not installed, which is the normal state
 /// for `cargo run` before `meson install`. Falling back to defaults beats
 /// `gio::Settings::new` aborting the process, which is what it does on a
-/// missing schema — an abort with no message that reads like a GTK bug.
+/// missing schema - an abort with no message that reads like a GTK bug.
 pub fn open() -> Option<gio::Settings> {
     let source = gio::SettingsSchemaSource::default()?;
     source.lookup(APP_ID, true)?;

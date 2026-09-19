@@ -73,7 +73,7 @@ impl Command {
 
 /// Adopt the token `gh` already holds, verify it, and store it.
 ///
-/// The login name is not in the token — it has to be read from the API, and it
+/// The login name is not in the token - it has to be read from the API, and it
 /// is the keyring key, so this step is not optional even for a known-good
 /// token.
 fn login(host: &str) -> ExitCode {

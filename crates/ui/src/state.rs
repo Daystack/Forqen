@@ -37,7 +37,7 @@ impl RepoState {
         // snappy, rebuilding the walker each chunk because `Walker` borrows the
         // repository. That was wrong, not merely wasteful: a fresh walker
         // restarts at HEAD, so every chunk re-appended ids from the beginning.
-        // The spine filled with duplicates and grew without bound — RSS climbed
+        // The spine filled with duplicates and grew without bound - RSS climbed
         // past 600MB on a 50k-commit repository and kept going.
         //
         // Chunking correctly needs the walker to outlive one call, which means
@@ -47,7 +47,7 @@ impl RepoState {
         // in milliseconds.
         //
         // ponytail: blocks the main loop for the length of one full revwalk.
-        // At ~1.3M commits (the kernel) that becomes perceptible — when it
+        // At ~1.3M commits (the kernel) that becomes perceptible - when it
         // does, move this to a worker with a channel feeding `push_ids`, and
         // keep the walker owned there.
         window.fill_spine(Walker::from_head(&repo)?)?;

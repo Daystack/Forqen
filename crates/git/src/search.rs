@@ -2,7 +2,7 @@
 //!
 //! Backed by `git grep` and `git log` rather than a walk of the working tree.
 //! git already has an index of tracked paths, respects `.gitignore` for free,
-//! and never descends into `target/` or `node_modules/` — the three things a
+//! and never descends into `target/` or `node_modules/` - the three things a
 //! naive recursive search gets wrong, in the order it gets them wrong.
 //!
 //! `-z` throughout. A path may contain a colon or a newline, and both appear
@@ -37,8 +37,8 @@ pub struct Hit {
 /// Search everything, capped at `limit` hits per category.
 ///
 /// Three categories rather than one ranked list: they answer different
-/// questions — "where is this string", "where is this file", "when did this
-/// change" — and blending them buries the one the user meant.
+/// questions - "where is this string", "where is this file", "when did this
+/// change" - and blending them buries the one the user meant.
 pub fn search(repo: &Repo, query: &str, limit: usize) -> Result<Vec<Hit>, GitError> {
     if query.trim().is_empty() {
         return Ok(Vec::new());

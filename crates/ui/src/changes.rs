@@ -2,7 +2,7 @@
 //!
 //! Layout mirrors the mental model of the index rather than the filesystem:
 //! staged above, unstaged below, the selected file's diff to the right, and the
-//! commit box under the staged list — because what gets committed is exactly
+//! commit box under the staged list - because what gets committed is exactly
 //! what is in the staged list, and putting the button anywhere else invites
 //! committing something you did not read.
 
@@ -91,7 +91,7 @@ impl ChangesView {
         summary.set_xalign(0.0);
         summary.add_css_class("dim-label");
 
-        // Label says "Stage" or "Unstage" depending on which side is shown —
+        // Label says "Stage" or "Unstage" depending on which side is shown -
         // the same selection means opposite things on the two lists, and one
         // ambiguous verb would make it a coin flip.
         let stage_sel_btn = gtk::Button::with_label("Stage");
@@ -194,7 +194,7 @@ impl ChangesView {
     }
 
     /// Show a file by path, refreshing first so a file that is not currently
-    /// listed — one with no uncommitted changes — still resolves.
+    /// listed - one with no uncommitted changes - still resolves.
     pub fn reveal_path(self: &Rc<Self>, path: &str) {
         self.refresh();
 
@@ -246,7 +246,7 @@ impl ChangesView {
         *self.rt.borrow_mut() = Some(rt);
     }
 
-    /// Exposed so the window can bind a shortcut and an action to it — blame
+    /// Exposed so the window can bind a shortcut and an action to it - blame
     /// is a reading task, and reaching for the mouse to start one is friction.
     pub fn blame_button(&self) -> &gtk::Button {
         &self.blame_btn
@@ -289,7 +289,7 @@ impl ChangesView {
             (Side::Staged, _) => stage::unstage_lines(&s.repo, &file, &mask),
             (Side::Unstaged, SelectionAction::Move) => stage::stage_lines(&s.repo, &file, &mask),
             // Discarding is a reverse-apply against the working tree, which
-            // `stage` does not cover — it only touches the index.
+            // `stage` does not cover - it only touches the index.
             (Side::Unstaged, SelectionAction::Discard) => discard_lines(&s.repo, &file, &mask),
         });
 
@@ -307,7 +307,7 @@ impl ChangesView {
             Some("Discard selected changes?"),
             Some(
                 "The selected lines will be removed from the working tree. \
-                 This cannot be undone — the changes were never committed, so \
+                 This cannot be undone - the changes were never committed, so \
                  there is nothing to recover them from.",
             ),
         );
@@ -440,7 +440,7 @@ impl ChangesView {
         label.set_ellipsize(gtk::pango::EllipsizeMode::Middle);
 
         // The icon depends on which side the row is on, so this cannot use
-        // the helper — but it goes through the same pair of properties, set
+        // the helper - but it goes through the same pair of properties, set
         // next to the constructor so the labelling is visible at a glance.
         let (icon, verb) = if side == Side::Staged {
             ("list-remove-symbolic", "Unstage this file")
@@ -509,7 +509,7 @@ impl ChangesView {
         match diffs {
             Some(Ok(files)) if !files.is_empty() => self.diff.show(&files[0]),
             // An untracked file has no diff against the index. Synthesising one
-            // — every line an addition against an empty pre-image — is exactly
+            // - every line an addition against an empty pre-image - is exactly
             // what `git add -N` would produce, so the same staging path works
             // on it rather than needing a special case.
             Some(Ok(_)) => match self.untracked_as_diff(path) {
@@ -735,7 +735,7 @@ fn build_layout(
 mod tests {
     use super::*;
 
-    // `render` is pure, so it is testable without a display server — which is
+    // `render` is pure, so it is testable without a display server - which is
     // the point of keeping the formatting out of the widget callbacks.
 
     #[test]

@@ -54,7 +54,7 @@ pub const APP_ID: &str = "space.daystack.Forqen";
 
 /// Build and present the main window.
 ///
-/// `initial_repo` opens a repository immediately — the path from `forqen
+/// `initial_repo` opens a repository immediately - the path from `forqen
 /// /some/repo`, or the most recent one from settings.
 pub fn build_window(
     app: &adw::Application,
@@ -75,7 +75,7 @@ pub fn build_window(
         .height_request(480)
         .build();
 
-    // Geometry comes from settings, which also carry the schema's defaults —
+    // Geometry comes from settings, which also carry the schema's defaults -
     // hardcoding a size here would silently win over the user's last resize.
     settings::bind_window(prefs.as_ref(), &window);
 
@@ -105,7 +105,7 @@ pub fn build_window(
     let worktree_btn = crate::commands::icon_button("view-dual-symbolic", "Worktrees");
 
     let reflog_btn =
-        crate::commands::icon_button("edit-undo-symbolic", "History of HEAD — undo anything");
+        crate::commands::icon_button("edit-undo-symbolic", "History of HEAD - undo anything");
 
     let search_btn =
         crate::commands::icon_button("system-search-symbolic", "Search the repository");
@@ -121,7 +121,7 @@ pub fn build_window(
     let account_btn = crate::commands::icon_button("avatar-default-symbolic", "Sign in to GitHub");
     // Nine buttons did not fit a tiled window, and a toolbar that overflows
     // hides exactly the commands someone was hunting for. What stays visible
-    // is what gets used constantly — open, and the three transfer operations.
+    // is what gets used constantly - open, and the three transfer operations.
     // Everything else moves into a menu, which costs nothing to build because
     // every command is already an action.
     let menu = gtk::gio::Menu::new();
@@ -161,7 +161,7 @@ pub fn build_window(
     // Push is separated from fetch/pull because it is the only one that changes
     // someone else's copy of history; grouping it with read-only operations
     // makes it too easy to hit by reflex. All three live in the navigation
-    // bar below, not here — see its construction further down.
+    // bar below, not here - see its construction further down.
     let push_btn = crate::commands::icon_button("send-to-symbolic", "Push to origin");
     let pull_btn = crate::commands::icon_button("document-save-symbolic", "Pull from origin");
     let fetch_btn = crate::commands::icon_button("view-refresh-symbolic", "Fetch all remotes");
@@ -183,10 +183,10 @@ pub fn build_window(
     // ViewSwitcher set during construction was destroyed the moment a
     // repository loaded and the Changes page became unreachable. A header bar
     // has exactly one title widget, so the switcher gets it and the repository
-    // context goes where it is more at home anyway — above the branch list.
+    // context goes where it is more at home anyway - above the branch list.
     //
     // It is a button, not a plain `AdwWindowTitle`, because clicking it is
-    // how GitHub Desktop reveals its repository switcher — a `MenuButton`
+    // how GitHub Desktop reveals its repository switcher - a `MenuButton`
     // can't host an `AdwWindowTitle` directly, so this reproduces its look
     // with two plain labels instead, and `load_repo` sets their text the
     // same way it always set the title/subtitle.
@@ -344,7 +344,7 @@ pub fn build_window(
 
     // A second row, not a wider one: seven pages plus three transfer buttons
     // never fit next to the window controls without the page labels
-    // truncating ("Pull R…") — which is what happened when the switcher lived
+    // truncating ("Pull R…") - which is what happened when the switcher lived
     // in `header`'s own title slot. `set_show_*_title_buttons(false)` keeps
     // this row from drawing a second set of minimise/maximise/close buttons;
     // `header` above still owns those.
@@ -398,7 +398,7 @@ pub fn build_window(
             if name == "actions" {
                 actions_.refresh();
             }
-            // Only the permanent pages are worth restoring — a Conflicts page
+            // Only the permanent pages are worth restoring - a Conflicts page
             // saved here would be gone by the next launch.
             if !matches!(
                 name.as_str(),
@@ -430,12 +430,12 @@ pub fn build_window(
         .build();
 
     // Shown instead of `split` until a repository is open. Nothing decided
-    // what "just launched, nothing loaded yet" looked like before this — a
+    // what "just launched, nothing loaded yet" looked like before this - a
     // fresh install with no CLI argument and an empty recent list rendered
     // the History/Changes stack anyway, empty and undesigned for that case.
     //
     // Its repository list is populated once, further down, right after
-    // `views` exists — not refreshed on every show the way the popover's is,
+    // `views` exists - not refreshed on every show the way the popover's is,
     // because `load_repo` always switches `root_stack` to "app" on success
     // and forqen has no "close repository" action, so this page is only ever
     // seen once per launch.
@@ -473,8 +473,8 @@ pub fn build_window(
     // Collapse the branch sidebar on a narrow window.
     //
     // Not a hypothetical: COSMIC auto-tiles, so a window on a 1366px display
-    // routinely gets half of it. At 680px the three columns — branches, file
-    // lists, diff — left the diff about 130px wide and unreadable. The sidebar
+    // routinely gets half of it. At 680px the three columns - branches, file
+    // lists, diff - left the diff about 130px wide and unreadable. The sidebar
     // is the one that can fold away without losing a workflow, since the branch
     // list is navigation rather than working surface.
     let breakpoint = adw::Breakpoint::new(adw::BreakpointCondition::new_length(
@@ -621,7 +621,7 @@ pub fn build_window(
 
     // Populated once: `load_repo` always leaves `root_stack` on "app" after a
     // successful open, and there is no "close repository" action, so this
-    // page — unlike the popover above — is never shown a second time in the
+    // page - unlike the popover above - is never shown a second time in the
     // same run to make a live refresh worth wiring.
     {
         let repos = repo_switcher::known_repos(prefs.as_ref());
@@ -730,7 +730,7 @@ pub fn build_window(
         views.load_repo(&path);
     }
 
-    // Whatever page won, populate it — the stack's notify handler only fires on
+    // Whatever page won, populate it - the stack's notify handler only fires on
     // a *change*, so a page that was already current never refreshed.
     match stack.visible_child_name().as_deref() {
         Some("conflicts") => conflicts.refresh(),
@@ -814,7 +814,7 @@ pub fn build_window(
                 &window_,
                 views_.state.clone(),
                 // Opening a result means showing that file's diff, which lives
-                // on the Changes page — so go there rather than leaving the
+                // on the Changes page - so go there rather than leaving the
                 // user wherever they searched from.
                 Rc::new(move |path| {
                     stack_inner.set_visible_child_name("changes");
@@ -897,7 +897,7 @@ pub fn build_window(
                 return;
             };
 
-            // Offer the tag describing HEAD — creating a release almost always
+            // Offer the tag describing HEAD - creating a release almost always
             // follows tagging.
             let tag = views_
                 .state
@@ -937,7 +937,7 @@ pub fn build_window(
             worktrees::WorktreeDialog::present(
                 &window_,
                 views_inner.state.clone(),
-                // Adding or removing a worktree changes the branch list — a
+                // Adding or removing a worktree changes the branch list - a
                 // branch checked out elsewhere cannot be checked out here.
                 Rc::new(move || {
                     if let Some(Some(path)) = views_inner
@@ -957,8 +957,8 @@ pub fn build_window(
         rebase_btn.connect_clicked(move |_| {
             let views_inner = views_.clone();
 
-            // Upstream when there is one — the unpushed commits are the ones
-            // safe to rewrite — otherwise the last few, clamped to what
+            // Upstream when there is one - the unpushed commits are the ones
+            // safe to rewrite - otherwise the last few, clamped to what
             // exists. Picking the base is engine logic, and it is tested there.
             let Some(onto) = views_inner
                 .state
@@ -1008,7 +1008,7 @@ pub enum ClientState {
     Ready(std::sync::Arc<github::Client>),
     /// Nobody has signed in on this machine.
     NotSignedIn,
-    /// An account exists but its token could not be read — almost always a
+    /// An account exists but its token could not be read - almost always a
     /// locked or absent Secret Service.
     CredentialsUnavailable(String),
 }
@@ -1028,7 +1028,7 @@ impl ClientState {
             Self::NotSignedIn => Some("No account is signed in."),
             Self::CredentialsUnavailable(_) => Some(
                 "An account is stored but its token could not be read. \
-                 Unlock your keyring — signing in again will not help while \
+                 Unlock your keyring - signing in again will not help while \
                  the Secret Service is unavailable.",
             ),
         }
@@ -1082,7 +1082,7 @@ pub(crate) fn github_client() -> Option<std::sync::Arc<github::Client>> {
 /// Takes the bindings as data rather than one parameter per button: the list
 /// grows with every command, and a positional signature that long is one
 /// transposed pair away from wiring a shortcut to the wrong action.
-/// Several of these buttons are never packed into the header — they moved into
+/// Several of these buttons are never packed into the header - they moved into
 /// the menu, and only their actions remain reachable. That works, and is worth
 /// stating because it looks like a leak: `emit_clicked` needs no parent and no
 /// realization, and the clone captured below keeps the button alive for the
@@ -1096,7 +1096,7 @@ fn install_actions(
 
     for (name, label, accels) in commands::BUTTON_COMMANDS {
         // A command in the table with no button behind it would install an
-        // action that does nothing — silently, which is precisely how search
+        // action that does nothing - silently, which is precisely how search
         // shipped broken. Fail at startup instead: this is a wiring mistake,
         // not a runtime condition, and it is the same on every launch.
         let button = buttons
@@ -1210,7 +1210,7 @@ fn style_provider() -> &'static gtk::CssProvider {
 pub fn apply_appearance(prefs: Option<&gtk::gio::Settings>) {
     let (theme_choice, font, density) = preferences::current(prefs);
 
-    // Forge is the only theme shipped, and it is dark — ask libadwaita for
+    // Forge is the only theme shipped, and it is dark - ask libadwaita for
     // the matching scheme rather than letting a light desktop wash it out.
     if let Some(style) = adw::StyleManager::default().into() {
         let manager: adw::StyleManager = style;
@@ -1223,8 +1223,8 @@ pub fn apply_appearance(prefs: Option<&gtk::gio::Settings>) {
 
 /// The widgets a repository load has to touch.
 ///
-/// Bundled because loading is triggered from three places — the open button,
-/// the command line, and session restore — and threading six clones through
+/// Bundled because loading is triggered from three places - the open button,
+/// the command line, and session restore - and threading six clones through
 /// each closure by hand is where a missed `.clone()` turns into a borrow error
 /// three layers deep in a callback.
 #[derive(Clone)]
@@ -1254,7 +1254,7 @@ struct Views {
 
 impl Views {
     /// Reveal the Conflicts page while a merge is stopped, hide it otherwise,
-    /// and jump to it the moment conflicts appear — a merge that stops with
+    /// and jump to it the moment conflicts appear - a merge that stops with
     /// conflicts is not something to leave the user to discover.
     fn update_conflicts(&self) {
         let conflicted = self.conflicts.has_conflicts();
@@ -1316,7 +1316,7 @@ impl Views {
             self.rt.clone(),
         );
 
-        // The inbox needs only an account, not a GitHub remote — it is shown
+        // The inbox needs only an account, not a GitHub remote - it is shown
         // whenever there is a client to ask, even in a repository hosted
         // somewhere else entirely.
         let client = github_client().map(|c| pulls::Target {
@@ -1352,7 +1352,7 @@ impl Views {
         self.update_conflicts();
         self.update_pulls();
 
-        // A repository just opened successfully — whatever the window was
+        // A repository just opened successfully - whatever the window was
         // showing before (the start page, or another repository), this is
         // the point where the real UI takes over.
         self.root_stack.set_visible_child_name("app");
@@ -1361,7 +1361,7 @@ impl Views {
             self.repo_title.set_label(&name);
             self.repo_subtitle.set_label(&branch);
             // The window title is what the task switcher and dock show.
-            self.window.set_title(Some(&format!("{name} — {branch}")));
+            self.window.set_title(Some(&format!("{name} - {branch}")));
         }
     }
 }
@@ -1495,7 +1495,7 @@ fn wire_selection(selection: &gtk::SingleSelection, state: &AppState, detail: &g
         let text = state.with(|s| {
             let end = (index + 1).min(s.window.len());
 
-            // A failure here means the object could not be read — a corrupt
+            // A failure here means the object could not be read - a corrupt
             // pack, or a commit that vanished under a concurrent gc. Saying so
             // beats a blank pane, which reads as "this commit has no message".
             if let Err(e) = s.window.ensure(&s.repo, index..end) {

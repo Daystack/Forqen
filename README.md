@@ -22,7 +22,7 @@ Release build, 50,000-commit repository, on Pop!_OS with the NVIDIA driver:
 | `GSK_RENDERER=cairo` | 67 MB | 105 MB | **38 MB** |
 
 The application's data costs 38MB and does not grow with time or scrolling.
-The rest is GTK's renderer baseline — mostly GPU driver buffers, and the reason
+The rest is GTK's renderer baseline - mostly GPU driver buffers, and the reason
 the original 90MB idle target is not reachable with hardware rendering on this
 hardware. That was an honest miss in planning: the budget was set without
 measuring what an empty GTK4 window costs.
@@ -32,7 +32,7 @@ and scrolls a 20,000-commit synthetic history in both directions and fails the
 build if RSS growth exceeds 64MB. Current measurement: **12MB**.
 
 That fixture is synthetic, so the claims were also checked against a real
-repository — git.git, 82,154 commits and 318MB of history:
+repository - git.git, 82,154 commits and 318MB of history:
 
 | | |
 |---|---|
@@ -45,7 +45,7 @@ The first row is the design claim: the spine holds 1.6MB of commit ids and the
 realized rows never exceed their budget of 512, so scrolling 82,000 commits
 costs what scrolling 82 costs. The total is dominated by gix's packfile
 mappings and object cache, which scale with the size of the repository rather
-than with anything forqen retains — which is also why the synthetic gate's
+than with anything forqen retains - which is also why the synthetic gate's
 ceiling does not apply to real repositories, and why they are measured
 separately in `large_repository.rs`.
 
@@ -56,7 +56,7 @@ it opens a repository that has none.
 
 R0 through R5 complete, R6 hardening underway. 320 tests.
 
-**Engine — all tested against real repositories:**
+**Engine - all tested against real repositories:**
 windowed history over large repositories · refs · working-tree status ·
 unified diff parsing · staging by file, hunk and individual line · commit with
 hooks, signing config and co-author trailers · branch
@@ -78,13 +78,13 @@ session bus · session restore.
 **R2:** a Pull Requests page lists open PRs, shows each one's changed files
 and diffs, drafts inline review comments anchored to a line and side, submits
 them as one review (comment, approve, or request changes), merges, and checks
-a PR out into a `pr/<n>` branch via the `refs/pull/*` refspec — fork-aware,
+a PR out into a `pr/<n>` branch via the `refs/pull/*` refspec - fork-aware,
 and correct for forks that have since been deleted. Review threads come from
 GraphQL, so resolved and outdated state is real rather than inferred.
 
 **CLI:** `forqen login` adopts the `gh` CLI's token, `forqen accounts` lists
 signed-in identities, `forqen logout` removes one. Sign-in without a display
-is the point — a headless machine, or a build with no GitHub App id.
+is the point - a headless machine, or a build with no GitHub App id.
 
 **R3, started:** a notifications inbox, polled with conditional requests so a
 minute-by-minute refresh costs almost no rate limit, honouring GitHub's
@@ -93,12 +93,12 @@ mentions sort above watched-repository noise; `e` marks read and `u`
 unsubscribes.
 
 Issues list, read, comment on, close and reopen. Pull requests are filtered
-out of the issues list — GitHub's issues endpoint returns them too, and a
+out of the issues list - GitHub's issues endpoint returns them too, and a
 client that forgets shows every open PR twice.
 
 Actions shows workflow runs, their jobs and steps, and job logs. The first
 failing run and its failing job are preselected, and each job names its
-failing step — the question a CI page is opened to answer is "what broke".
+failing step - the question a CI page is opened to answer is "what broke".
 Failed jobs can be re-run and running ones cancelled.
 
 An interactive rebase editor drives `git rebase -i` through
@@ -107,7 +107,7 @@ squash/fixup/drop per commit, and continue, skip or abort when it stops.
 Invalid plans are refused before git starts, rather than after it has left a
 rebase in progress.
 
-A worktree manager creates, lists and removes additional checkouts — the
+A worktree manager creates, lists and removes additional checkouts - the
 feature that makes reviewing someone else's branch cheap, since it needs no
 stashing and leaves the current work alone.
 
@@ -117,27 +117,27 @@ search-engine problem. Resets, rebases and merges are surfaced by default,
 since the rest of a reflog is noise.
 
 Blame attributes every line to the commit that last changed it and, where
-there is a GitHub remote, names the pull request that introduced it — the
+there is a GitHub remote, names the pull request that introduced it - the
 question blame is actually asked is "why", and the answer lives in the
 discussion rather than in a name.
 
-A command palette (Ctrl+Shift+P) reaches every command by typing initials —
+A command palette (Ctrl+Shift+P) reaches every command by typing initials -
 `ir` finds "Interactive rebase". It is built from the same action registry the
 toolbar uses, so a command cannot exist without appearing there.
 
 Repository search (Ctrl+F) covers file contents, file names and commit
-messages, grouped rather than blended — they answer different questions.
+messages, grouped rather than blended - they answer different questions.
 It goes through `git grep`, so `.gitignore` is respected for free and
 `target/` is never searched.
 
 Releases lists what has shipped with its notes and asset sizes, and creates a
 new one against an existing tag.
 
-Gists list and create, prefilled from the file open in the Changes page —
+Gists list and create, prefilled from the file open in the Changes page -
 the reason to reach for one is usually "share this".
 
 A read-only settings view shows visibility, default branch, licence,
-collaborators and branch protection — the screen answers "why was my push
+collaborators and branch protection - the screen answers "why was my push
 rejected". Changing any of it is left to github.com, where the consequences
 are spelled out.
 
@@ -156,7 +156,7 @@ type pairing rather than a recolouring of one theme:
 | **Lane** | Dark-first. Colour identifies a branch and does nothing else. |
 | **Ledger** | Warm paper, near-square corners, rules instead of shadows. |
 
-IBM Plex Sans and Plex Mono are **bundled** rather than assumed present — none
+IBM Plex Sans and Plex Mono are **bundled** rather than assumed present - none
 of the candidate families were installed on the development machine, and a
 missing family in GTK falls back silently, so an interface that quietly
 rendered in something else would look like nothing had happened. Other
@@ -188,8 +188,8 @@ a compositor.
 binary handles rebase, signed commits, hook-running commits, push/fetch
 negotiation, LFS and filters.
 
-This is not a stopgap. `gix-rebase` is published at version `0.0.0` — an empty
-placeholder — and reimplementing hook execution, gitattributes filters and
+This is not a stopgap. `gix-rebase` is published at version `0.0.0` - an empty
+placeholder - and reimplementing hook execution, gitattributes filters and
 commit signing is how a client silently corrupts someone's repository. Shelling
 out is both more correct and cheaper in memory, since the child process's heap
 dies with the child.
@@ -198,10 +198,10 @@ dies with the child.
 
 Two structures with deliberately different costs:
 
-- **The spine** — `Vec<ObjectId>`, 20 inline bytes per commit, never evicted.
+- **The spine** - `Vec<ObjectId>`, 20 inline bytes per commit, never evicted.
   About 26MB for the Linux kernel's 1.3M commits. Gives O(1) random access so
   the scrollbar can jump anywhere.
-- **Realized rows** — `HashMap<usize, CommitRow>`, capped at 512 entries. These
+- **Realized rows** - `HashMap<usize, CommitRow>`, capped at 512 entries. These
   hold the heap strings, so these are what eviction targets.
 
 `GtkColumnView` only asks for rows it is about to draw, so the model reports a
@@ -210,7 +210,7 @@ viewport rather than by age: pure FIFO thrashes on scroll-up, because the rows
 just passed are the oldest and get discarded first.
 
 Also: bounded gix object cache, mmapped blobs, lazy per-file diffs, and
-`MALLOC_ARENA_MAX=2` set in the `.desktop` entry and Flatpak manifest — glibc
+`MALLOC_ARENA_MAX=2` set in the `.desktop` entry and Flatpak manifest - glibc
 reads it at the first `malloc`, long before `main`, so it cannot be set from
 inside the process.
 
@@ -221,7 +221,7 @@ the binary; no client secret, because a secret in a distributed binary is
 readable with `strings` and is therefore not a secret.
 
 - Tokens go to the Secret Service via the `keyring` crate. There is no
-  file-backed fallback — if no keyring is available forqen says so and stops,
+  file-backed fallback - if no keyring is available forqen says so and stops,
   rather than quietly writing credentials somewhere every process can read.
 - An existing `gh` CLI login can be adopted on first run.
 - PAT paste is supported for GitHub Enterprise Server.
@@ -240,7 +240,7 @@ cargo run --bin forqen -- /path/to/repo
 
 GtkSourceView is deliberately not a dependency. The diff pane is a
 `GtkColumnView` where one row is one diff line, so a selection maps to diff
-lines unambiguously — which is what makes line-level staging possible. A
+lines unambiguously - which is what makes line-level staging possible. A
 `GtkTextView` selection is a character range, and recovering "which lines" from
 it is guesswork the moment a line wraps.
 
@@ -275,13 +275,13 @@ cargo test -p auth -- --ignored              # keyring round trip, needs a sessi
 Git tests build fixture repositories with the real `git` binary and assert
 against the real index, so the fixtures are unarguably valid rather than
 whatever gix is assumed to write. Staging tests in particular check the *index
-contents* after a partial stage, not just that the command exited zero — a
+contents* after a partial stage, not just that the command exited zero - a
 synthesized patch that applies cleanly but stages the wrong lines is the
 failure mode that matters.
 
 Not covered by tests: GTK widget interaction. The window has been run and
-visually verified against a real repository — history, the Changes page, the
-interactive diff and the responsive layout all render correctly — but button
+visually verified against a real repository - history, the Changes page, the
+interactive diff and the responsive layout all render correctly - but button
 clicks have not been driven programmatically.
 
 ## Licence

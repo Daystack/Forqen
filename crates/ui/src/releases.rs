@@ -1,6 +1,6 @@
 //! Releases: what has shipped, and the files that shipped with it.
 //!
-//! A dialog rather than a page — releases are consulted occasionally, not
+//! A dialog rather than a page - releases are consulted occasionally, not
 //! worked in, and the page bar is already carrying six tabs.
 
 use std::cell::{Cell, RefCell};
@@ -211,7 +211,7 @@ impl ReleasesDialog {
         }
 
         let name = gtk::Entry::new();
-        name.set_placeholder_text(Some("Title (optional — defaults to the tag)"));
+        name.set_placeholder_text(Some("Title (optional - defaults to the tag)"));
 
         let notes = gtk::TextView::new();
         notes.set_wrap_mode(gtk::WrapMode::WordChar);

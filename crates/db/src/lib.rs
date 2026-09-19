@@ -2,9 +2,9 @@
 //!
 //! Two jobs, both about not going to the network:
 //!
-//! * **accounts** — which identities exist, on which hosts. Tokens live in the
+//! * **accounts** - which identities exist, on which hosts. Tokens live in the
 //!   keyring, never here; this table holds only the pointer.
-//! * **http_cache** — ETag plus body per URL. GitHub does not count a `304 Not
+//! * **http_cache** - ETag plus body per URL. GitHub does not count a `304 Not
 //!   Modified` against the rate limit, so revalidating is nearly free. This is
 //!   what makes a polled notifications inbox affordable, and what lets the app
 //!   render real data with a staleness banner when offline instead of an error.
@@ -32,7 +32,7 @@ pub enum DbError {
 /// The store.
 ///
 /// The connection is behind a `Mutex` because `rusqlite::Connection` is `Send`
-/// but not `Sync`, and this is shared as `Arc<Db>` across the tokio runtime —
+/// but not `Sync`, and this is shared as `Arc<Db>` across the tokio runtime -
 /// an API fetch on a worker thread and a cache read on the main loop touch the
 /// same handle. Without it, `Arc<Db>` makes every future holding one non-`Send`,
 /// which surfaces as an inscrutable error at the `tokio::spawn` call site
@@ -42,7 +42,7 @@ pub enum DbError {
 /// and writes per user action, and SQLite serializes writes internally anyway.
 ///
 /// ponytail: one global lock. If a background sync ever contends with UI reads,
-/// move to `r2d2_sqlite` — the `lock()` chokepoint below is the only thing that
+/// move to `r2d2_sqlite` - the `lock()` chokepoint below is the only thing that
 /// would need to change.
 pub struct Db {
     conn: Mutex<Connection>,
@@ -102,7 +102,7 @@ impl Db {
             .query_row("PRAGMA user_version", [], |r| r.get(0))?;
 
         const MIGRATIONS: &[&str] = &[
-            // v1 — accounts and the HTTP cache.
+            // v1 - accounts and the HTTP cache.
             r#"
             CREATE TABLE accounts (
                 host       TEXT NOT NULL,

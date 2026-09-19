@@ -5,7 +5,7 @@
 //! hand-written queries, and for that the machinery costs more than it saves.
 //! Responses land in the same `serde` structs everything else uses.
 //!
-//! GraphQL is used only where REST is genuinely worse — review threads, which
+//! GraphQL is used only where REST is genuinely worse - review threads, which
 //! REST returns flat with `in_reply_to_id` and expects the client to rebuild.
 
 use serde::de::DeserializeOwned;

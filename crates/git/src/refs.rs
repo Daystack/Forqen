@@ -79,7 +79,7 @@ fn classify(full: &str) -> Option<RefKind> {
     } else if full.starts_with("refs/tags/") {
         Some(RefKind::Tag)
     } else {
-        // refs/stash, refs/notes/*, refs/pull/* — not sidebar material.
+        // refs/stash, refs/notes/*, refs/pull/* - not sidebar material.
         None
     }
 }

@@ -2,7 +2,7 @@
 <!--
   forqen application icon.
 
-  A commit graph with a branch and a merge — the thing the app is for, drawn at
+  A commit graph with a branch and a merge - the thing the app is for, drawn at
   the scale where a 48px icon still reads. Flat shapes and no gradients on
   purpose: gradients turn to mud below 32px, and the GNOME HIG asks for a
   distinctive silhouette rather than detail.

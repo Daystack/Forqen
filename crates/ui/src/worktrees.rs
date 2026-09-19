@@ -1,7 +1,7 @@
 //! The worktree manager.
 //!
 //! A dialog, like stashes: worktrees are something you set up and then leave,
-//! not a place you work — the work happens in the checkout, in an editor.
+//! not a place you work - the work happens in the checkout, in an editor.
 //!
 //! The reason it exists is pull request review. Without a worktree, looking at
 //! someone else's branch means stashing, switching, unstashing and hoping;

@@ -1,4 +1,4 @@
-//! The windowed commit list — a `GListModel` that never materializes the whole
+//! The windowed commit list - a `GListModel` that never materializes the whole
 //! history.
 //!
 //! This is the reason forqen is a GTK app and not a webview. `GtkColumnView`
@@ -122,7 +122,7 @@ impl CommitListModel {
         }
     }
 
-    /// Reset to empty — on closing a repository or opening another.
+    /// Reset to empty - on closing a repository or opening another.
     pub fn clear(&self) {
         let had = *self.imp().announced.borrow();
         *self.imp().announced.borrow_mut() = 0;
@@ -138,11 +138,11 @@ impl CommitListModel {
 /// already mmapped. That is a deliberate exception to "no git on the main
 /// loop": a single commit read is a decompression of a few hundred bytes, and
 /// routing it through a worker would mean every row flashing a placeholder
-/// before settling — worse UX to fix a cost that is not measurable.
+/// before settling - worse UX to fix a cost that is not measurable.
 ///
 /// ponytail: sync hydrate on the main loop, bounded by one commit object per
 /// row. If a cold page cache ever makes scrolling stutter, move `ensure` to a
-/// worker and render placeholders for rows not yet realized — `HistoryWindow`
+/// worker and render placeholders for rows not yet realized - `HistoryWindow`
 /// already returns `None` for those.
 pub fn row_factory(state: AppState) -> gtk::SignalListItemFactory {
     let factory = gtk::SignalListItemFactory::new();

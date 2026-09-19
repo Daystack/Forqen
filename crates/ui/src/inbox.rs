@@ -152,7 +152,7 @@ impl InboxView {
         self.refresh();
     }
 
-    /// Stop polling — called when the page is left, so a background tab is not
+    /// Stop polling - called when the page is left, so a background tab is not
     /// spending rate limit on a view nobody is reading.
     pub fn stop(&self) {
         if let Some(id) = self.poll.borrow_mut().take() {

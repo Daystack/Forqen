@@ -4,7 +4,7 @@
 //! most user configuration converges: `pre-commit` and `commit-msg` hooks,
 //! `commit.gpgsign`, `gpg.format = ssh`, `user.signingkey`, `commit.template`,
 //! `core.hooksPath`, and gitattributes filters on the staged content. Any of
-//! these silently skipped produces a commit the user did not ask for — an
+//! these silently skipped produces a commit the user did not ask for - an
 //! unsigned commit in a repository that requires signatures, or a commit that
 //! bypassed the lint hook that was supposed to stop it.
 

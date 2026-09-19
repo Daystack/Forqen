@@ -5,7 +5,7 @@
 //! is unparseable the moment an author's name contains two spaces. The
 //! porcelain format emits a header block per line group and repeats nothing,
 //! so the same commit's metadata appears once and subsequent lines reference
-//! it by id — which is also why a parser has to remember what it has seen.
+//! it by id - which is also why a parser has to remember what it has seen.
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -23,7 +23,7 @@ pub struct BlameLine {
     pub time: i64,
     pub summary: String,
     pub content: String,
-    /// True when this line comes from an uncommitted change — git reports the
+    /// True when this line comes from an uncommitted change - git reports the
     /// all-zero id for those, and calling that "not committed" is clearer than
     /// showing forty zeroes.
     pub uncommitted: bool,
@@ -106,7 +106,7 @@ fn parse(text: &str) -> Vec<BlameLine> {
         // A header line starts with a 40-character sha.
         if key.len() == 40 && key.chars().all(|c| c.is_ascii_hexdigit()) {
             current_sha = Some(key.to_string());
-            // `<orig-line> <final-line> [<count>]` — the second is the line
+            // `<orig-line> <final-line> [<count>]` - the second is the line
             // number in the file as it stands, which is what to display.
             current_line_no = value
                 .split_whitespace()

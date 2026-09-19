@@ -1,6 +1,6 @@
 //! Merging, and reading the conflicts it leaves behind.
 //!
-//! A merge that conflicts is not a failure — it is the normal path into the
+//! A merge that conflicts is not a failure - it is the normal path into the
 //! conflict resolver. [`merge`] therefore returns [`MergeOutcome::Conflicted`]
 //! rather than an error, and the conflicted paths come back with it.
 //!
@@ -107,12 +107,12 @@ pub fn conflicted_paths(repo: &Repo) -> Result<Vec<String>, GitError> {
 /// The three sides of a conflicted file, read from the index stages.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ConflictSides {
-    /// Stage 1 — the common ancestor. `None` when both sides added the file,
+    /// Stage 1 - the common ancestor. `None` when both sides added the file,
     /// which has no ancestor to show.
     pub base: Option<String>,
-    /// Stage 2 — our version (the branch being merged into).
+    /// Stage 2 - our version (the branch being merged into).
     pub ours: Option<String>,
-    /// Stage 3 — their version (the branch being merged in).
+    /// Stage 3 - their version (the branch being merged in).
     pub theirs: Option<String>,
 }
 
@@ -125,7 +125,7 @@ pub fn conflict_sides(repo: &Repo, path: &str) -> Result<ConflictSides, GitError
     })
 }
 
-/// Read one index stage. `None` when that stage does not exist — which is
+/// Read one index stage. `None` when that stage does not exist - which is
 /// meaningful, not an error: an add/add conflict has no stage 1, and a
 /// delete/modify conflict is missing stage 2 or 3.
 fn stage_blob(repo: &Repo, stage: u8, path: &str) -> Option<String> {

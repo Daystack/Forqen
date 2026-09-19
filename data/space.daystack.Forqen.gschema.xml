@@ -21,7 +21,7 @@
       <default>[]</default>
       <summary>Recently opened repository paths</summary>
       <description>
-        Paths only. Open repositories are never cached as live handles — a
+        Paths only. Open repositories are never cached as live handles - a
         cached handle keeps its packfile mappings and object cache alive, which
         is a leak wearing a convenience feature's clothes.
       </description>

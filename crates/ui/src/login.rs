@@ -2,7 +2,7 @@
 //!
 //! Threading: `reqwest` futures need a tokio reactor, and GTK widgets may only
 //! be touched from the glib main context. The bridge is one `async_channel`
-//! per login — the poll loop runs on the tokio runtime and sends its outcome;
+//! per login - the poll loop runs on the tokio runtime and sends its outcome;
 //! a `spawn_future_local` on the main context receives it and updates widgets.
 //! Nothing GTK-shaped ever crosses to the worker.
 
@@ -248,7 +248,7 @@ fn reqwest_client() -> reqwest::Client {
 
 /// Confirm a token works and learn which login it belongs to.
 ///
-/// The account name is not in the token response, and it is the keyring key —
+/// The account name is not in the token response, and it is the keyring key -
 /// so this call is not optional even when the token is known-good.
 async fn verify(host: &str, token: Token) -> Result<(Account, Token), AuthError> {
     // A throwaway in-memory cache: this runs before the real store exists, and

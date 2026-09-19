@@ -40,7 +40,7 @@ endif
 
 # --- icons ---------------------------------------------------------------------
 # Installed under hicolor rather than an app-private directory so the icon is
-# found by the shell, the app switcher, and notifications — not just by GTK.
+# found by the shell, the app switcher, and notifications - not just by GTK.
 #
 # PNG only for the application icon, deliberately. The scalable SVG is the
 # source of truth and lives in the repository, but installing it breaks the
@@ -70,7 +70,7 @@ endforeach
 # --- bundled fonts ---------------------------------------------------------
 # IBM Plex ships with the application rather than being assumed present.
 # None of the proposed families were installed on the development machine, and
-# a missing family in GTK falls back silently — the interface would simply
+# a missing family in GTK falls back silently - the interface would simply
 # render in something else with nothing to say why. Installed under the app's
 # own directory so fontconfig finds it without touching the user's fonts.
 install_data(

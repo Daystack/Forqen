@@ -6,7 +6,7 @@ Comment=Native GitHub client for Linux
 # first token of Exec as the binary and refuses to export an entry pointing at
 # `env`, which is not in /app/bin. The Flatpak sets that variable through
 # finish-args instead. For a native install the app logs a warning when it is
-# unset — glibc reads it at the first malloc, long before main(), so nothing
+# unset - glibc reads it at the first malloc, long before main(), so nothing
 # in-process can set it.
 Exec=forqen %U
 Icon=space.daystack.Forqen

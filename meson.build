@@ -1,8 +1,8 @@
 # Meson wraps cargo rather than replacing it.
 #
-# Cargo builds the code; meson exists because GNOME's install conventions —
+# Cargo builds the code; meson exists because GNOME's install conventions -
 # GSettings schema compilation, AppStream validation, icon cache, desktop file
-# validation — are what Flatpak and distro packaging expect, and reimplementing
+# validation - are what Flatpak and distro packaging expect, and reimplementing
 # them in a build.rs would be strictly more work for the same result.
 
 project(

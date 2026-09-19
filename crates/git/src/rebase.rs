@@ -1,7 +1,7 @@
 //! Interactive rebase.
 //!
 //! This is the module the whole two-backend design exists for. `gix-rebase` is
-//! published at version `0.0.0` — an empty placeholder — so there is nothing to
+//! published at version `0.0.0` - an empty placeholder - so there is nothing to
 //! call, and reimplementing rebase means reimplementing hook execution,
 //! gitattributes filters, commit signing, and the rerere cache. Getting any of
 //! those wrong silently rewrites someone's history incorrectly.
@@ -74,7 +74,7 @@ pub struct Step {
 /// A rebase plan: the commits to replay, oldest first.
 ///
 /// Oldest first because that is the order `git rebase -i` writes and applies
-/// them, and presenting them newest-first — the order history is read in —
+/// them, and presenting them newest-first - the order history is read in -
 /// would mean "squash into the previous" pointed the opposite way on screen
 /// from the way it behaves.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -171,13 +171,13 @@ impl Plan {
 
 /// Pick a sensible base to rebase onto.
 ///
-/// The upstream when the branch has one — the commits above it are the unpushed
+/// The upstream when the branch has one - the commits above it are the unpushed
 /// ones, and therefore the ones it is safe to rewrite. Otherwise the last few
 /// commits, clamped to what actually exists: `HEAD~10` on a five-commit
 /// repository does not resolve, and the dialog then opens onto an error for
 /// the most ordinary case there is, a young repository.
 ///
-/// Returns `None` when there is nothing to rebase — fewer than two commits, so
+/// Returns `None` when there is nothing to rebase - fewer than two commits, so
 /// no commit has a parent to replay onto.
 pub fn default_base(repo: &Repo, max_depth: usize) -> Option<String> {
     if let Ok(Some(upstream)) = crate::branch::upstream_of_head(repo) {
@@ -209,7 +209,7 @@ pub fn default_base(repo: &Repo, max_depth: usize) -> Option<String> {
 pub enum Outcome {
     /// Finished cleanly.
     Complete,
-    /// Stopped — for a conflict, or an `edit`/`reword` step. The working tree
+    /// Stopped - for a conflict, or an `edit`/`reword` step. The working tree
     /// is mid-rebase until continued or aborted.
     Stopped { reason: String },
 }
@@ -256,7 +256,7 @@ pub fn run(repo: &Repo, onto: &str, plan: &Plan) -> Result<Outcome, GitError> {
 
     if out.status.success() {
         // `edit` and `reword` stop successfully, so an exit code of zero does
-        // not mean the rebase is over — the state directory is what settles it.
+        // not mean the rebase is over - the state directory is what settles it.
         if in_progress(repo) {
             return Ok(Outcome::Stopped {
                 reason: first_useful_line(&stdout, &stderr),
@@ -404,7 +404,7 @@ mod tests {
         assert!(lines[1].starts_with("squash 0101"), "{}", lines[1]);
         assert!(
             lines[2].starts_with("drop 0202"),
-            "a dropped commit is written as `drop`, not omitted — the todo is \
+            "a dropped commit is written as `drop`, not omitted - the todo is \
              also the record of what was decided: {}",
             lines[2]
         );
@@ -474,7 +474,7 @@ mod tests {
     /// A repo whose commits touch *different* files.
     ///
     /// The shared fixture rewrites one file every commit, so dropping or
-    /// reordering any of them conflicts — correct git behaviour, but it means
+    /// reordering any of them conflicts - correct git behaviour, but it means
     /// a test asserting "drop removed the commit" would really be asserting
     /// "the patches happened to still apply". Independent files separate the
     /// two questions.
@@ -496,7 +496,7 @@ mod tests {
         run(&["init", "-q", "-b", "main"]);
         // Identity goes in the repository config, not the environment.
         // `git rebase` spawns its own git subprocesses, and those do not
-        // inherit GIT_AUTHOR_* from this process — on a machine with no global
+        // inherit GIT_AUTHOR_* from this process - on a machine with no global
         // identity (every CI runner) the rebase then stops with "Committer
         // identity unknown" while the same test passes locally.
         run(&["config", "user.name", "Fixture"]);
@@ -551,7 +551,7 @@ mod tests {
     #[test]
     fn a_drop_that_conflicts_stops_rather_than_corrupting() {
         // Every commit rewrites the same file here, so removing one from the
-        // middle leaves the next patch unappliable. Stopping is correct — the
+        // middle leaves the next patch unappliable. Stopping is correct - the
         // point is that it reports rather than producing a wrong tree.
         let dir = fixture(4);
         let repo = crate::Repo::open(dir.path()).unwrap();
@@ -616,7 +616,7 @@ mod tests {
         assert!(run(&repo, "HEAD~2", &plan).is_err());
         assert!(
             !in_progress(&repo),
-            "refusing early is the point — git would have left state to clean up"
+            "refusing early is the point - git would have left state to clean up"
         );
     }
 

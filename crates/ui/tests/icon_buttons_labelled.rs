@@ -6,7 +6,7 @@
 //! reader does not read in place of a name.
 //!
 //! Source-level rather than widget-level, because GTK cannot be initialised
-//! headlessly in this environment — broadwayd starts but no client can reach
+//! headlessly in this environment - broadwayd starts but no client can reach
 //! its socket.
 
 use std::path::Path;
@@ -35,7 +35,7 @@ fn icon_buttons_go_through_the_labelling_helper() {
         for (i, line) in text.lines().enumerate() {
             // `from_icon_name` always constructs an icon-only button. But
             // `set_icon_name` also exists on widgets that carry their own
-            // visible label — a PreferencesPage, a StackPage — where the icon
+            // visible label - a PreferencesPage, a StackPage - where the icon
             // is decoration beside text and needs no separate label. Only
             // flag it when the receiver looks like a button.
             let constructs_icon_button = line.contains("Button::from_icon_name");
@@ -47,7 +47,7 @@ fn icon_buttons_go_through_the_labelling_helper() {
             if !constructs_icon_button && !sets_button_icon {
                 continue;
             }
-            // An explicit accessible Property::Label nearby is equally valid —
+            // An explicit accessible Property::Label nearby is equally valid -
             // some buttons choose their icon at runtime and cannot use the
             // helper.
             let window: String = text

@@ -2,7 +2,7 @@
 //!
 //! Threads come from GraphQL because REST cannot express them. The REST
 //! endpoint returns every review comment in one flat list, each reply carrying
-//! an `in_reply_to_id`, and leaves the client to rebuild the conversation — a
+//! an `in_reply_to_id`, and leaves the client to rebuild the conversation - a
 //! reconstruction that has no answer when a parent has been deleted, and that
 //! cannot tell you whether a thread is resolved or has gone outdated because
 //! the line it was anchored to has since changed. GraphQL returns all three
@@ -22,7 +22,7 @@ pub struct ReviewThread {
     pub id: String,
     pub path: String,
     /// Line in the diff this thread is anchored to. `None` once the thread is
-    /// outdated — the anchor no longer exists in the current diff.
+    /// outdated - the anchor no longer exists in the current diff.
     pub line: Option<u32>,
     pub is_resolved: bool,
     /// The anchored line has changed since the comment was written, so the

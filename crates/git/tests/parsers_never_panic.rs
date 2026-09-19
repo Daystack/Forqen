@@ -6,7 +6,7 @@
 //! in it, and a truncated pipe can cut a record in half. A panic in any of
 //! them takes the whole window down while someone is mid-commit.
 //!
-//! Not a fuzzer — a fixed corpus of the shapes that actually break parsers,
+//! Not a fuzzer - a fixed corpus of the shapes that actually break parsers,
 //! run against every parser that accepts free-form text.
 
 use git::{diff, search, worktree};

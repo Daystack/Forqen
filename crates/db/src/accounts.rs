@@ -1,6 +1,6 @@
 //! The account roster.
 //!
-//! Tokens are **not** here — they live in the Secret Service. This table only
+//! Tokens are **not** here - they live in the Secret Service. This table only
 //! records which identities exist so the app can show an account switcher
 //! without unlocking the keyring first.
 
@@ -82,7 +82,7 @@ impl Db {
     }
 
     /// Forget an account. The caller is responsible for deleting the matching
-    /// keyring entry — dropping the row without the token would strand a
+    /// keyring entry - dropping the row without the token would strand a
     /// credential in the keyring with nothing referencing it.
     pub fn remove_account(&self, host: &str, login: &str) -> Result<(), DbError> {
         self.lock().execute(

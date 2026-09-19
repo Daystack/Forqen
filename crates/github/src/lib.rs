@@ -1,8 +1,8 @@
 //! GitHub API client.
 //!
 //! Built directly on `reqwest` rather than on a wrapper crate, because the
-//! central design constraint here is *conditional requests* — attaching
-//! `If-None-Match` and handling `304 Not Modified` — and the convenience
+//! central design constraint here is *conditional requests* - attaching
+//! `If-None-Match` and handling `304 Not Modified` - and the convenience
 //! wrappers hide exactly that layer. A `304` does not count against GitHub's
 //! primary rate limit, so revalidation is the difference between a polled
 //! notifications inbox being free and being impossible.
@@ -68,7 +68,7 @@ pub enum GhError {
 pub enum Provenance {
     /// A `200` off the wire.
     Fresh,
-    /// A `304` — the cached body is confirmed current.
+    /// A `304` - the cached body is confirmed current.
     Revalidated,
     /// The network was unreachable; this is the last known good body.
     OfflineCache,
@@ -173,7 +173,7 @@ impl Client {
 
         let resp = match req.send().await {
             Ok(r) => r,
-            // Offline. Serving the stored body beats an error page — the user
+            // Offline. Serving the stored body beats an error page - the user
             // can still read what they fetched last time.
             Err(e) if e.is_connect() || e.is_timeout() => {
                 let Some(c) = cached else {

@@ -189,7 +189,7 @@ impl StashDialog {
         match result {
             Some(Err(e)) => {
                 // Applying onto a dirty tree conflicts, and git's message says
-                // which path — worth showing verbatim.
+                // which path - worth showing verbatim.
                 self.report("Stash operation failed", &e.to_string());
                 return;
             }

@@ -2,7 +2,7 @@
 //!
 //! Chosen over the authorization-code flow because a desktop app cannot hold a
 //! `client_secret`, and because this flow needs no localhost listener and no
-//! custom URI scheme — it therefore also works over SSH on a headless machine.
+//! custom URI scheme - it therefore also works over SSH on a headless machine.
 //!
 //! The network I/O and the decision logic are deliberately separate:
 //! [`handle_poll_response`] is a pure function over a parsed response, so the
@@ -89,14 +89,14 @@ pub async fn start(
 pub enum PollResponse {
     /// The user approved. Credentials attached.
     Approved(Token),
-    /// `authorization_pending` — the user has not finished yet. Normal.
+    /// `authorization_pending` - the user has not finished yet. Normal.
     Pending,
-    /// `slow_down` — we polled too fast. GitHub may supply a new interval.
+    /// `slow_down` - we polled too fast. GitHub may supply a new interval.
     /// Ignoring this gets the *App* rate-limited for every user, not just this one.
     SlowDown { suggested: Option<Duration> },
-    /// `expired_token` — the code aged out before approval.
+    /// `expired_token` - the code aged out before approval.
     Expired,
-    /// `access_denied` — the user pressed Cancel.
+    /// `access_denied` - the user pressed Cancel.
     Denied,
     /// Anything else (`incorrect_client_credentials`, `device_flow_disabled`, …).
     Fatal(String),
@@ -143,7 +143,7 @@ pub enum Next {
 /// * `Pending` keeps the current interval. GitHub's suggested interval is
 ///   already tuned, and inventing extra backoff on the normal path only makes
 ///   a fast approval feel slow.
-/// * `SlowDown` always increases the interval — it is a directive, not a hint.
+/// * `SlowDown` always increases the interval - it is a directive, not a hint.
 ///   GitHub's `suggested` value wins when present; otherwise the RFC 8628
 ///   minimum bump of 5s applies. Capped at [`MAX_INTERVAL`] so a malformed or
 ///   hostile value cannot back off past the code's own lifetime.
@@ -154,7 +154,7 @@ pub enum Next {
 /// limiting ever shows up in practice; the tests pin the invariants, not the
 /// exact numbers.
 pub fn handle_poll_response(resp: PollResponse, state: &mut PollState, now: SystemTime) -> Next {
-    // Terminal outcomes first — these are answers, not reasons to keep waiting.
+    // Terminal outcomes first - these are answers, not reasons to keep waiting.
     let slow_down = match resp {
         PollResponse::Approved(token) => return Next::Done(Box::new(token)),
         PollResponse::Expired => return Next::Fail(AuthError::Expired),

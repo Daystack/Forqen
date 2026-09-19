@@ -7,7 +7,7 @@
 //!   FORQEN_MEMCHECK_REPO=/path/to/big cargo test -p git \
 //!       --test large_repository --release -- --nocapture
 //!
-//! Findings on git.git — 82,154 commits, 318MB of history:
+//! Findings on git.git - 82,154 commits, 318MB of history:
 //!
 //! * Scrolling the entire history adds 1.6MB. That is the windowed model
 //!   working: the spine is 1.6MB of ids and the realized rows stay at their
@@ -15,7 +15,7 @@
 //! * Walking it costs 543ms and 63MB without a commit-graph, and 30ms and
 //!   3.8MB with one. That is why `ensure_commit_graph_async` exists.
 //! * Total RSS lands near 68MB either way, dominated by gix's packfile
-//!   mappings and object cache — which scale with the size of the repository
+//!   mappings and object cache - which scale with the size of the repository
 //!   rather than with anything forqen retains.
 
 use git::history::{HistoryWindow, Walker};
@@ -72,7 +72,7 @@ fn scrolling_a_real_history_stays_flat() {
     // the number of rows scrolled past.
     assert!(
         growth < 80.0,
-        "scrolling {total} commits grew RSS by {growth:.1}MB — the windowed \
+        "scrolling {total} commits grew RSS by {growth:.1}MB - the windowed \
          model should keep this bounded by the object cache, not by history"
     );
     assert_eq!(
@@ -113,7 +113,7 @@ fn a_commit_graph_makes_the_walk_dramatically_cheaper() {
     // graph entirely.
     assert!(
         growth < 30.0,
-        "walking with a commit-graph should not cost {growth:.1}MB — is the \
+        "walking with a commit-graph should not cost {growth:.1}MB - is the \
          graph being ignored?"
     );
 }

@@ -6,7 +6,7 @@
 //! stylesheet rather than a set of variables swapped underneath a shared one.
 //!
 //! The named colours are defined even where this stylesheet does not use them,
-//! because libadwaita's own widgets read them — `@theme_bg_color`,
+//! because libadwaita's own widgets read them - `@theme_bg_color`,
 //! `@accent_bg_color` and friends are how a headerbar or a suggested-action
 //! button picks up a palette without being restyled individually.
 
@@ -14,7 +14,7 @@ use std::fmt;
 
 /// A complete visual system: palette plus geometry.
 ///
-/// One shipped theme, styled after macOS's Dark Mode — its layered flat
+/// One shipped theme, styled after macOS's Dark Mode - its layered flat
 /// surfaces, hairline separators and label tiers, with forqen's own orange
 /// accent rather than systemBlue. No light variant: a native Linux app has no
 /// portable equivalent to NSVisualEffectView, so the macOS *look* here is
@@ -37,7 +37,7 @@ impl Theme {
     }
 
     pub fn from_id(_id: &str) -> Self {
-        // Only one theme ships, so every id — current, stale, or typoed —
+        // Only one theme ships, so every id - current, stale, or typoed -
         // resolves to it. Keeping the function rather than inlining `Forge`
         // at call sites means a second theme, if one is ever added, has one
         // place to teach the fallback.
@@ -59,7 +59,7 @@ impl Theme {
     fn palette(self) -> Palette {
         match self {
             // Values are macOS's own published Dark Mode system colours
-            // (window, sidebar, separator and label tiers) — not eyeballed.
+            // (window, sidebar, separator and label tiers) - not eyeballed.
             // The only departures from stock macOS are the accent, which is
             // forqen's own rather than systemBlue, and the diff add/del
             // pair, which predate this palette and already read as
@@ -95,7 +95,7 @@ struct Palette {
     bg: &'static str,
     bg_alt: &'static str,
     bar: &'static str,
-    /// Popovers, dialogs and cards — a step above `bg_alt`, standing in for
+    /// Popovers, dialogs and cards - a step above `bg_alt`, standing in for
     /// the elevation a real compositor blur would otherwise provide.
     raised: &'static str,
     fg: &'static str,
@@ -116,7 +116,7 @@ struct Palette {
 /// The interface typeface.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum Font {
-    /// IBM Plex — bundled, so it is always available. The default.
+    /// IBM Plex - bundled, so it is always available. The default.
     #[default]
     Plex,
     /// Atkinson Hyperlegible, if the system has it.
@@ -165,7 +165,7 @@ impl Font {
     /// The CSS family stack.
     ///
     /// Always ends in a generic, because a missing family fails silently in
-    /// GTK exactly as it does in a browser — the text simply renders in
+    /// GTK exactly as it does in a browser - the text simply renders in
     /// something else and nothing says why.
     pub fn ui_stack(self) -> &'static str {
         match self {
@@ -200,7 +200,7 @@ impl Font {
 
 /// Ask fontconfig whether a family resolves to itself.
 ///
-/// `fc-match` always answers with *something* — that is its job — so the
+/// `fc-match` always answers with *something* - that is its job - so the
 /// answer only counts if the family it names is the one asked for.
 fn family_installed(family: &str) -> bool {
     let Ok(out) = std::process::Command::new("fc-match")
@@ -274,7 +274,7 @@ impl Density {
 /// Geometry is not one radius applied everywhere. macOS doesn't do that
 /// either: push buttons are full capsules regardless of width, surfaces
 /// (cards, popovers, dialogs) use a moderate radius, and only the sidebar's
-/// selection highlight is a smaller inset pill — the main content area's row
+/// selection highlight is a smaller inset pill - the main content area's row
 /// selection stays edge-to-edge, the way a Mail message list or an Xcode
 /// editor selects. With one theme shipped, these stop being a per-theme
 /// `radius()` method and become fixed constants here.
@@ -291,7 +291,7 @@ pub fn stylesheet(theme: Theme, font: Font, density: Density) -> String {
 
     format!(
         r#"
-/* forqen — {theme_label} · {font_label} · {density_label} */
+/* forqen - {theme_label} · {font_label} · {density_label} */
 
 /* libadwaita reads these to style widgets this sheet never mentions. */
 @define-color window_bg_color {bg};
@@ -325,7 +325,7 @@ headerbar {{
 
 .monospace, .diff-view, textview.monospace {{ font-family: {mono}; }}
 
-/* GtkTextView and GtkEntry paint their own text-node background — it is not
+/* GtkTextView and GtkEntry paint their own text-node background - it is not
    inherited from a parent's `.card`/`.background` class, so leaving this
    unset is how a plain text view or an empty comment box renders as a solid,
    illegible block regardless of which theme is loaded. `bg`/`fg` is the safe
@@ -341,7 +341,7 @@ textview, textview text, entry {{
     background-color: {raised};
 }}
 
-/* A bare ScrolledWindow has no background of its own either — the same gap,
+/* A bare ScrolledWindow has no background of its own either - the same gap,
    one layer out. Painting it here means a list that has not yet been given
    `.card` still shows the content plane instead of nothing. */
 scrolledwindow, list, .boxed-list {{
@@ -350,7 +350,7 @@ scrolledwindow, list, .boxed-list {{
 
 /* Lists carry the density: padding on the row, not margins on its children,
    so a change here moves every view at once. Content-area rows stay
-   edge-to-edge on purpose — only the sidebar gets an inset selection, below. */
+   edge-to-edge on purpose - only the sidebar gets an inset selection, below. */
 listview > row, list > row, row.activatable {{
     padding-top: {pad}px;
     padding-bottom: {pad}px;
@@ -378,7 +378,7 @@ button {{ border-radius: {radius_control}; }}
     border-radius: {radius_row};
 }}
 
-/* Diff colours are semantic, not accent — they must stay legible whichever
+/* Diff colours are semantic, not accent - they must stay legible whichever
    palette is loaded, so each theme supplies its own foreground too. This is
    the one definition; diff_view.rs must not duplicate it. */
 .diff-view .diff-added   {{ background-color: {add}; color: {add_fg}; }}
@@ -483,8 +483,8 @@ mod tests {
 
     #[test]
     fn every_theme_defines_the_colours_libadwaita_reads() {
-        // Widgets this sheet never mentions — headerbars, suggested buttons,
-        // popovers — pick up a palette only through these names. A theme
+        // Widgets this sheet never mentions - headerbars, suggested buttons,
+        // popovers - pick up a palette only through these names. A theme
         // missing one renders half in the old palette.
         for t in Theme::ALL {
             let css = stylesheet(t, Font::Plex, Density::Default);
@@ -547,7 +547,7 @@ mod tests {
     #[test]
     fn textviews_and_entries_get_a_real_background_and_foreground() {
         // The bug this whole pass started from: a plain GtkTextView paints
-        // its own text-node background, which nothing here set — so a
+        // its own text-node background, which nothing here set - so a
         // comment box or the commit message editor rendered as an
         // unreadable solid block regardless of which theme was loaded.
         let css = stylesheet(Theme::Forge, Font::Plex, Density::Default);

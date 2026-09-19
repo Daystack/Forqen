@@ -2,7 +2,7 @@
 //!
 //! This is what the ETag cache was built for. GitHub excludes `304 Not
 //! Modified` from the primary rate limit, so a poll that finds nothing new
-//! costs latency and no budget — which is the only reason polling every minute
+//! costs latency and no budget - which is the only reason polling every minute
 //! is affordable at all. Without conditional requests, a 60-second poll would
 //! spend 60 of an hourly 5000 requests doing nothing.
 //!
@@ -56,7 +56,7 @@ impl Notification {
     /// The pull request or issue number this points at.
     ///
     /// Parsed from the subject URL because the payload has no number field.
-    /// `None` for subjects that have none — a Release, or a Discussion, whose
+    /// `None` for subjects that have none - a Release, or a Discussion, whose
     /// URL is absent entirely.
     pub fn number(&self) -> Option<u64> {
         let url = self.subject.url.as_ref()?;

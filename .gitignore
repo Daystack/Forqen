@@ -2,7 +2,7 @@
 /target
 **/*.rs.bk
 
-# Cargo.lock IS committed. This workspace produces a binary, not a library —
+# Cargo.lock IS committed. This workspace produces a binary, not a library -
 # a reproducible dependency set is the point, and `cargo install --locked`
 # and the Flatpak offline build both depend on it.
 
@@ -16,7 +16,7 @@
 /.flatpak-builder
 *.flatpak
 *.flatpakref
-# `cargo vendor` output for the offline Flathub build — regenerated, never edited.
+# `cargo vendor` output for the offline Flathub build - regenerated, never edited.
 /vendor
 cargo-vendor.tar.gz
 

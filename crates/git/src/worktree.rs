@@ -2,13 +2,13 @@
 //!
 //! The feature that makes reviewing a pull request cheap. Without it, looking
 //! at someone else's branch means stashing, switching, unstashing, and hoping
-//! nothing was lost — so in practice people either don't review, or they review
+//! nothing was lost - so in practice people either don't review, or they review
 //! in the browser. A worktree is a second directory on a second branch sharing
 //! one object store, so the current work is simply left alone.
 //!
 //! `git worktree list --porcelain` is the only sane way to read them. The
 //! human-facing format aligns columns with spaces and embeds the branch in
-//! brackets, which breaks on any path containing a space — and a checkout under
+//! brackets, which breaks on any path containing a space - and a checkout under
 //! "My Documents" is not exotic.
 
 use std::path::{Path, PathBuf};
@@ -24,7 +24,7 @@ pub struct Worktree {
     pub head: Option<String>,
     /// The main working tree, as opposed to a linked one. It cannot be removed.
     pub is_main: bool,
-    /// The directory is gone but the administrative entry remains — usually
+    /// The directory is gone but the administrative entry remains - usually
     /// someone deleted the folder by hand. Prunable, not usable.
     pub is_prunable: bool,
     /// Held by a `git worktree lock`, typically because it lives on removable
@@ -132,7 +132,7 @@ fn shorten_ref(full: &str) -> String {
 /// Create a worktree at `path` on `branch`.
 ///
 /// `create_branch` makes a new branch there; otherwise the branch must exist
-/// and must not already be checked out elsewhere — git enforces that, and the
+/// and must not already be checked out elsewhere - git enforces that, and the
 /// error it gives says which worktree holds it.
 pub fn add(repo: &Repo, path: &Path, branch: &str, create_branch: bool) -> Result<(), GitError> {
     let path_str = path.to_string_lossy().into_owned();
@@ -151,7 +151,7 @@ pub fn add(repo: &Repo, path: &Path, branch: &str, create_branch: bool) -> Resul
 /// Remove a worktree and its directory.
 ///
 /// `force` discards uncommitted changes inside it. Without it git refuses when
-/// the worktree is dirty, which is the behaviour worth keeping by default —
+/// the worktree is dirty, which is the behaviour worth keeping by default -
 /// the whole point of a worktree is that work lives in it.
 pub fn remove(repo: &Repo, path: &Path, force: bool) -> Result<(), GitError> {
     let path_str = path.to_string_lossy().into_owned();
@@ -291,7 +291,7 @@ prunable
         assert!(list[0].is_main);
         assert_eq!(list[1].branch.as_deref(), Some("pr/1"));
 
-        // And the original checkout is untouched — the entire point.
+        // And the original checkout is untouched - the entire point.
         assert!(dir.path().join("f.txt").exists());
     }
 

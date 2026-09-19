@@ -75,7 +75,7 @@ jobs:
   # Packaging validation, deliberately not on every push.
   #
   # A Flatpak build downloads ~1GB of GNOME SDK and compiles the whole
-  # dependency tree inside the sandbox — several minutes and a lot of bandwidth
+  # dependency tree inside the sandbox - several minutes and a lot of bandwidth
   # to re-prove something that only changes when the manifest does. Runs on
   # tags and on demand.
   #
@@ -84,7 +84,7 @@ jobs:
   # on the runner instead and the SDK comes from flathub.
   # Packaging is validated on every push to main, not only at release.
   #
-  # It broke four separate ways the first time it was run for real — a runtime
+  # It broke four separate ways the first time it was run for real - a runtime
   # version that did not exist, git failing to compile under GCC 15, no
   # vendored crates in a sandbox with no network, and an AppStream step that
   # could not read an SVG-only icon. None of those were visible from the Rust
@@ -125,7 +125,7 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
-      # vendor/ is gitignored — 437MB has no business in the repository — and
+      # vendor/ is gitignored - 437MB has no business in the repository - and
       # the build sandbox has no network, so without this cargo cannot resolve
       # a single dependency.
       - name: Vendor crates for the offline sandbox
@@ -146,7 +146,7 @@ jobs:
             --repo=repo build build-aux/space.daystack.Forqen.yml
 
       # A bundle anyone can download from the run and install with
-      # `flatpak install forqen.flatpak` — the thing that proves packaging
+      # `flatpak install forqen.flatpak` - the thing that proves packaging
       # actually produced something installable.
       - name: Export a bundle
         run: |
@@ -160,9 +160,9 @@ jobs:
           retention-days: 14
 
   # Snap packaging, ungated for the same reason the flatpak job is: a packaging
-  # job that has never executed is a hypothesis. This one has real unknowns —
+  # job that has never executed is a hypothesis. This one has real unknowns -
   # whether gtksourceview-5 is inside the gnome extension's content snap, and
-  # whether the personal-files plugs survive review — and the only way to learn
+  # whether the personal-files plugs survive review - and the only way to learn
   # the first is to build it.
   snap:
     name: snap

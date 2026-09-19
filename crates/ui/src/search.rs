@@ -1,6 +1,6 @@
 //! Repository search.
 //!
-//! Three groups rather than one ranked list — file contents, file names,
+//! Three groups rather than one ranked list - file contents, file names,
 //! commit messages. They answer different questions ("where is this string",
 //! "where is this file", "when did this change"), and blending them into one
 //! relevance order buries whichever the user actually meant.

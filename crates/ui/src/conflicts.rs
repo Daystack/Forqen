@@ -1,6 +1,6 @@
 //! Conflict resolution.
 //!
-//! Shown when a merge stops. Three panes — base, ours, theirs — read from the
+//! Shown when a merge stops. Three panes - base, ours, theirs - read from the
 //! index stages rather than parsed out of the `<<<<<<<` markers in the working
 //! file: the index holds all three as real blobs, whereas the markers cannot
 //! express the common ancestor at all under the default `merge.conflictStyle`,
@@ -23,7 +23,7 @@ use crate::state::AppState;
 pub struct ConflictView {
     pub root: gtk::Widget,
     /// The three side-by-side panes, exposed so a window breakpoint can stack
-    /// them — three columns of text do not fit a tiled half-screen.
+    /// them - three columns of text do not fit a tiled half-screen.
     pub sides: gtk::Box,
     state: AppState,
     file_list: gtk::ListBox,
@@ -38,7 +38,7 @@ pub struct ConflictView {
     /// Path being resolved.
     current: Rc<RefCell<Option<String>>>,
     /// Called after the conflict state changes, so the rest of the window can
-    /// refresh — resolving the last conflict ends the merge.
+    /// refresh - resolving the last conflict ends the merge.
     on_change: RefCell<Option<Rc<dyn Fn()>>>,
 }
 
@@ -181,7 +181,7 @@ impl ConflictView {
 
         self.status.set_text(&match (in_merge, paths.len()) {
             (false, _) => "No merge in progress".to_string(),
-            (true, 0) => "All conflicts resolved — commit the merge".to_string(),
+            (true, 0) => "All conflicts resolved - commit the merge".to_string(),
             (true, 1) => "1 file still conflicted".to_string(),
             (true, n) => format!("{n} files still conflicted"),
         });
@@ -237,7 +237,7 @@ impl ConflictView {
             .set_text(sides.theirs.as_deref().unwrap_or(""));
 
         // The merged pane starts from the working file, which git has already
-        // filled with conflict markers — that is the usual starting point for
+        // filled with conflict markers - that is the usual starting point for
         // hand-editing, and it shows exactly which regions disagree.
         let working = self
             .state
@@ -294,7 +294,7 @@ impl ConflictView {
             .to_string();
 
         // Saving a file that still contains markers would stage a broken file
-        // and mark the conflict resolved — the single most common way to commit
+        // and mark the conflict resolved - the single most common way to commit
         // `<<<<<<< HEAD` into a repository.
         if has_conflict_markers(&text) {
             self.report(
@@ -373,7 +373,7 @@ impl ConflictView {
 ///
 /// Anchored to the line start and requiring exactly seven characters, which is
 /// what git writes. A loose `contains("<<<<<<<")` would fire on a file that
-/// discusses conflict markers — documentation about merging, for instance.
+/// discusses conflict markers - documentation about merging, for instance.
 pub fn has_conflict_markers(text: &str) -> bool {
     text.lines().any(|l| {
         (l.starts_with("<<<<<<<") || l.starts_with(">>>>>>>"))

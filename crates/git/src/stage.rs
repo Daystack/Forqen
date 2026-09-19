@@ -3,7 +3,7 @@
 //! Partial staging works by synthesizing a patch containing only the selected
 //! changes and feeding it to `git apply --cached`. Everything unselected has to
 //! be rewritten as context, and the hunk header counts have to be recomputed to
-//! match — get either wrong and git rejects the patch, or worse, accepts a
+//! match - get either wrong and git rejects the patch, or worse, accepts a
 //! patch that stages something the user did not pick.
 //!
 //! The rules depend on **which file the patch will be applied to**, and getting
@@ -34,7 +34,7 @@ use crate::{GitError, Repo};
 
 /// Which file the synthesized patch will be applied to.
 ///
-/// Determines how *unselected* changes are rendered — see the module docs. The
+/// Determines how *unselected* changes are rendered - see the module docs. The
 /// two targets are mirror images, and using the wrong one makes `git apply`
 /// reject the patch outright.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -68,7 +68,7 @@ pub fn discard_file(repo: &Repo, path: &str) -> Result<(), GitError> {
 ///
 /// `selected` is indexed as `selected[hunk_index][line_index]`, matching the
 /// shape of `file.hunks[..].lines[..]`. A `false` for a context line is
-/// meaningless and ignored — context is always emitted.
+/// meaningless and ignored - context is always emitted.
 pub fn stage_lines(repo: &Repo, file: &FileDiff, selected: &[Vec<bool>]) -> Result<(), GitError> {
     let patch = build_patch(file, selected, PatchTarget::Index)?;
     if patch.is_empty() {
@@ -101,12 +101,12 @@ pub fn unstage_lines(repo: &Repo, file: &FileDiff, selected: &[Vec<bool>]) -> Re
 ///
 /// Distinct from [`unstage_lines`], which moves changes out of the index and
 /// leaves the file alone. This reverse-applies the patch to the file itself,
-/// so the edits are gone — they were never committed, so nothing can recover
+/// so the edits are gone - they were never committed, so nothing can recover
 /// them. Callers must confirm first.
 pub fn discard_lines(repo: &Repo, file: &FileDiff, selected: &[Vec<bool>]) -> Result<(), GitError> {
     // Worktree, not Index: the file being patched is the diff's post-image, so
     // unselected additions must appear as context and unselected removals must
-    // be omitted — the exact opposite of the staging path.
+    // be omitted - the exact opposite of the staging path.
     let patch = build_patch(file, selected, PatchTarget::Worktree)?;
     if patch.is_empty() {
         return Ok(());
@@ -135,7 +135,7 @@ fn select_only_hunk(file: &FileDiff, hunk_index: usize) -> Vec<Vec<bool>> {
 /// Synthesize a patch containing only the selected changes.
 ///
 /// Returns an empty string when nothing is selected, which callers treat as a
-/// no-op rather than as an error — a click that selects nothing should do
+/// no-op rather than as an error - a click that selects nothing should do
 /// nothing, not raise.
 pub fn build_patch(
     file: &FileDiff,
@@ -190,7 +190,7 @@ fn filter_hunk(hunk: &Hunk, selected: &[bool], target: PatchTarget) -> Option<St
                 kept.push(line.clone());
             }
             // Unselected addition. Absent from the index, present in the
-            // working tree — so omit it for one target and demote it to context
+            // working tree - so omit it for one target and demote it to context
             // for the other.
             LineKind::Added => {
                 if target == PatchTarget::Worktree {
@@ -205,7 +205,7 @@ fn filter_hunk(hunk: &Hunk, selected: &[bool], target: PatchTarget) -> Option<St
                 kept.push(line.clone());
             }
             // Unselected removal. Still in the index, already gone from the
-            // working tree — the mirror of the case above.
+            // working tree - the mirror of the case above.
             LineKind::Removed => {
                 if target == PatchTarget::Index {
                     kept.push(DiffLine {

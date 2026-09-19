@@ -2,7 +2,7 @@
 //!
 //! Rust ignores a `.rs` file nothing declares: it is not compiled, produces no
 //! warning, and its code never runs. `crates/ui/src/search.rs` sat that way
-//! through a commit claiming search worked — the button existed, its keyboard
+//! through a commit claiming search worked - the button existed, its keyboard
 //! shortcut existed, and activating it did nothing at all.
 //!
 //! Lives in `ui` but checks the whole workspace, because one test that cannot

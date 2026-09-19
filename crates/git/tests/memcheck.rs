@@ -29,7 +29,7 @@ const COMMITS: usize = 20_000;
 /// Ceiling on RSS *growth* from opening and scrolling the whole history.
 ///
 /// Growth rather than absolute, because the baseline differs between a debug
-/// and a release binary and between libc versions — what must stay flat is the
+/// and a release binary and between libc versions - what must stay flat is the
 /// part that scales with history size.
 const GROWTH_CEILING_MB: u64 = 64;
 
@@ -96,7 +96,7 @@ fn fast_import_fixture(dir: &Path, n: usize) {
 /// One test, not several.
 ///
 /// `VmRSS` is a property of the process, and cargo runs a test binary's tests
-/// as threads in one process — so two tests that both sample RSS measure each
+/// as threads in one process - so two tests that both sample RSS measure each
 /// other's allocations. Splitting this would produce a gate that fails
 /// depending on thread scheduling, which is worse than no gate.
 #[test]
@@ -135,7 +135,7 @@ fn scrolling_a_large_history_stays_within_budget() {
         step += viewport;
     }
 
-    // And back up again — the direction that a FIFO eviction policy would
+    // And back up again - the direction that a FIFO eviction policy would
     // thrash on.
     while step > viewport {
         step -= viewport;
@@ -160,8 +160,8 @@ fn scrolling_a_large_history_stays_within_budget() {
 /// The spine's cheapness is a structural property, so assert it structurally
 /// rather than with a second RSS probe.
 ///
-/// An RSS measurement here would be dominated by gix's own revwalk state — the
-/// seen-set and the 16MB object cache — neither of which is what the windowed
+/// An RSS measurement here would be dominated by gix's own revwalk state - the
+/// seen-set and the 16MB object cache - neither of which is what the windowed
 /// design is claiming about. That `realized()` stays at zero across a full walk
 /// is the actual invariant: it is what guarantees no `CommitRow`, and therefore
 /// no heap strings, exist for unviewed commits.
@@ -180,6 +180,6 @@ fn walking_the_spine_hydrates_nothing() {
     assert_eq!(
         window.realized(),
         0,
-        "walking must not hydrate rows — the spine holds ids only"
+        "walking must not hydrate rows - the spine holds ids only"
     );
 }

@@ -2,12 +2,12 @@
 #
 # Built in R0 rather than deferred to a packaging phase, because the sandbox
 # holes below are architectural. Discovering in month six that push cannot
-# reach ssh-agent, or that the keyring is unreachable, means redoing auth —
+# reach ssh-agent, or that the keyring is unreachable, means redoing auth -
 # not adding a manifest line.
 id: space.daystack.Forqen
 runtime: org.gnome.Platform
-# Tracks the current GNOME runtime. Bumping this is not free — each branch is a
-# separate ~1GB runtime download for every user — so it moves deliberately,
+# Tracks the current GNOME runtime. Bumping this is not free - each branch is a
+# separate ~1GB runtime download for every user - so it moves deliberately,
 # not with every GNOME release.
 runtime-version: '50'
 sdk: org.gnome.Sdk
@@ -18,7 +18,7 @@ command: forqen
 # Skip flatpak-builder's AppStream catalog generation.
 #
 # `appstreamcli compose` loads icons through glycin, which spawns a nested
-# sandbox via flatpak-spawn — and that cannot start inside flatpak-builder's
+# sandbox via flatpak-spawn - and that cannot start inside flatpak-builder's
 # own sandbox. It fails identically on SVG and PNG:
 #
 #   file-read-error: Loader process exited early with status '1'
@@ -75,7 +75,7 @@ modules:
     buildsystem: autotools
     # GNOME SDK 50 ships GCC 15, which defaults to C23. git before 2.48 has a
     # static function named `unreachable` in reflog.c, and C23 makes
-    # `unreachable()` a macro in stddef.h — so those builds fail with
+    # `unreachable()` a macro in stddef.h - so those builds fail with
     # "macro 'unreachable' passed 3 arguments, but takes just 0". 2.51 renamed
     # it. `-std=gnu17` also works and is the fallback if this ever has to be
     # pinned back.
@@ -91,7 +91,7 @@ modules:
       - type: archive
         url: https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.51.0.tar.xz
         # Verified against the kernel.org tarball with sha256sum on 2026-08-17.
-        # If this ever mismatches, the build fails loudly — that is correct.
+        # If this ever mismatches, the build fails loudly - that is correct.
         # Do not "fix" a mismatch by deleting the hash.
         sha256: 60a7c2251cc2e588d5cd87bae567260617c6de0c22dca9cdbfc4c7d2b8990b62
     cleanup:
@@ -104,7 +104,7 @@ modules:
     config-opts:
       - -Dprofile=release
     # The build sandbox has no network. Without vendored crates cargo tries to
-    # reach index.crates.io and dies with "Could not resolve host" — which is
+    # reach index.crates.io and dies with "Could not resolve host" - which is
     # also exactly what Flathub's builders do, so this is not optional there
     # either.
     #

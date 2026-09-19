@@ -1,9 +1,9 @@
-//! Git engine. Never imports `gtk` — every behaviour here is testable headless.
+//! Git engine. Never imports `gtk` - every behaviour here is testable headless.
 //!
 //! Two execution paths sit behind one API:
 //!
-//! * **gix, in-process** — reads: revwalk, objects, refs, status, diff, blame.
-//! * **the `git` binary** — rebase, signed commits, hook-running commits,
+//! * **gix, in-process** - reads: revwalk, objects, refs, status, diff, blame.
+//! * **the `git` binary** - rebase, signed commits, hook-running commits,
 //!   push/fetch negotiation, LFS, filters.
 //!
 //! The split is not a stopgap. `gix-rebase` is published at `0.0.0` (an empty
@@ -38,12 +38,12 @@ use std::time::SystemTime;
 /// borrow from the repository or hold a `gix` handle.
 ///
 /// Field choice is a memory decision. At ~1.3M commits, every extra `String`
-/// here is another allocation per realized row — which is survivable only
+/// here is another allocation per realized row - which is survivable only
 /// because [`history::window`] keeps the realized set tiny.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CommitRow {
     pub id: ObjectId,
-    /// First line of the message. The body is fetched on selection, not here —
+    /// First line of the message. The body is fetched on selection, not here -
     /// full messages would dominate the row's footprint.
     pub summary: String,
     pub author_name: String,

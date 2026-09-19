@@ -1,7 +1,7 @@
 //! The repository switcher: every repository forqen has opened, one click
 //! to jump to any of them.
 //!
-//! Two mount points share this module — the start page, shown when nothing
+//! Two mount points share this module - the start page, shown when nothing
 //! is open yet, and a popover behind the repository/branch title, for
 //! switching away from one that is. Both are built from the same list for
 //! the same reason GitHub Desktop's are: a repository you switched to
@@ -16,8 +16,8 @@ use adw::prelude::*;
 use git::Repo;
 use github::pulls::parse_remote;
 
-/// One entry in the switcher: where it lives, what to call it, and — when a
-/// GitHub remote could be parsed — which repository it is there.
+/// One entry in the switcher: where it lives, what to call it, and - when a
+/// GitHub remote could be parsed - which repository it is there.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct KnownRepo {
     pub path: PathBuf,
@@ -28,7 +28,7 @@ pub struct KnownRepo {
 /// Every repository forqen has opened that still exists on disk, classified
 /// into GitHub-backed and local-only.
 ///
-/// A thin wrapper over `classify` — kept separate so a test can drive
+/// A thin wrapper over `classify` - kept separate so a test can drive
 /// classification against real fixture paths without a GSettings schema
 /// installed, which `settings::recent` needs and a test environment does not
 /// have.
@@ -37,13 +37,13 @@ pub fn known_repos(prefs: Option<&gtk::gio::Settings>) -> Vec<KnownRepo> {
 }
 
 /// `settings::recent()` already drops a path that no longer exists; this adds
-/// the rarer second case — a path that exists but no longer opens as a
+/// the rarer second case - a path that exists but no longer opens as a
 /// repository (moved, corrupted, permissions changed since it was recorded).
 /// Both failure modes get the same treatment: dropped rather than shown as a
 /// row that errors the moment someone clicks it.
 ///
 /// Opening each path is not batched behind a background thread the way a
-/// network call would be — `Repo::open` maps the object database rather than
+/// network call would be - `Repo::open` maps the object database rather than
 /// reading it, and every other call site in this codebase treats that as
 /// cheap enough to do inline (`state.rs`'s own doc comments say as much).
 fn classify(paths: impl IntoIterator<Item = PathBuf>) -> Vec<KnownRepo> {
@@ -64,7 +64,7 @@ fn classify(paths: impl IntoIterator<Item = PathBuf>) -> Vec<KnownRepo> {
         .collect()
 }
 
-/// `parse_remote` is deliberately host-agnostic — it also has to work for a
+/// `parse_remote` is deliberately host-agnostic - it also has to work for a
 /// GitHub Enterprise Server remote, which forqen supports elsewhere in the
 /// app, so it extracts an owner/name pair from any URL shaped like one.
 /// Grouping a repository into the "GitHub" section needs the opposite check:
@@ -168,7 +168,7 @@ fn section(
 
     // Single click, unlike `wire_branch_switching`'s double-click: that guard
     // exists because a single click there is also how you select a branch to
-    // *look at* without switching to it. This list has no such dual purpose —
+    // *look at* without switching to it. This list has no such dual purpose -
     // every row exists only to be activated.
     let paths: Vec<PathBuf> = repos.iter().map(|r| r.path.clone()).collect();
     let on_activate = on_activate.clone();
@@ -219,7 +219,7 @@ mod tests {
         let none = base.path().join("no-remote-repo");
         repo_with_origin(&none, None);
 
-        // Exists on disk, but is not a repository — the case
+        // Exists on disk, but is not a repository - the case
         // `settings::recent`'s own existence check cannot catch.
         let not_a_repo = base.path().join("just-a-folder");
         std::fs::create_dir(&not_a_repo).unwrap();
@@ -245,7 +245,7 @@ mod tests {
     fn only_a_github_shaped_host_counts_as_github() {
         // parse_remote itself is host-agnostic on purpose (it also serves
         // GitHub Enterprise Server), so classification needs its own host
-        // check — a self-hosted GitLab remote has the exact same
+        // check - a self-hosted GitLab remote has the exact same
         // `host/owner/name` shape and must not be mislabeled.
         assert_eq!(
             github_owner_repo("https://github.com/Daystack/Forqen.git"),

@@ -26,7 +26,7 @@ pub const BUTTON_COMMANDS: &[Spec] = &[
     ("worktrees", "Worktrees", &["<Control><Shift>w"]),
     (
         "reflog",
-        "History of HEAD — undo anything",
+        "History of HEAD - undo anything",
         &["<Control><Shift>z"],
     ),
     ("blame", "Blame this file", &["<Control><Shift>b"]),

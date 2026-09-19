@@ -1,7 +1,7 @@
 //! Stash management.
 //!
 //! `git stash` is a porcelain command with no plumbing equivalent that handles
-//! untracked files, the index, and the reflog together — so this shells out,
+//! untracked files, the index, and the reflog together - so this shells out,
 //! like every other write path.
 
 use std::process::Command;

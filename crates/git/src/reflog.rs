@@ -1,7 +1,7 @@
 //! The reflog: every position HEAD has held, and the way back from a mistake.
 //!
 //! git already records this. What is missing everywhere is a way to *read* it
-//! without knowing it exists — so a bad reset, a rebase that ate a commit, or
+//! without knowing it exists - so a bad reset, a rebase that ate a commit, or
 //! a branch deleted one line too early becomes a search-engine problem instead
 //! of a button.
 //!
@@ -29,7 +29,7 @@ pub struct Entry {
 impl Entry {
     /// Whether this entry is a plausible thing to recover *to*.
     ///
-    /// A reflog is mostly noise — every checkout and every commit appears. The
+    /// A reflog is mostly noise - every checkout and every commit appears. The
     /// entries worth surfacing are the ones immediately before something
     /// destructive, and the destructive actions are what mark them.
     pub fn is_recovery_point(&self) -> bool {
@@ -52,7 +52,7 @@ pub fn read(repo: &Repo, ref_name: &str, limit: usize) -> Result<Vec<Entry>, Git
             // `%gD` is the indexed selector (HEAD@{0}); `%gd` under
             // --date=relative is the *same* selector with the time in place of
             // the index (HEAD@{2 hours ago}), which is how git exposes when an
-            // entry was written. There is no %gr — an earlier version used one
+            // entry was written. There is no %gr - an earlier version used one
             // and git printed it back literally, into the UI.
             "--date=relative",
             "--format=%gD%x00%gs%x00%H%x00%gd",
@@ -61,7 +61,7 @@ pub fn read(repo: &Repo, ref_name: &str, limit: usize) -> Result<Vec<Entry>, Git
         ])
         .output()?;
 
-    // A ref with no reflog is not an error — a freshly cloned repository has
+    // A ref with no reflog is not an error - a freshly cloned repository has
     // none for most branches.
     if !out.status.success() {
         return Ok(Vec::new());
@@ -72,7 +72,7 @@ pub fn read(repo: &Repo, ref_name: &str, limit: usize) -> Result<Vec<Entry>, Git
     // Renumber the selectors.
     //
     // `--date=relative` applies to `%gD` as well as `%gd`, so git returns
-    // `HEAD@{2 minutes ago}` for both — the index form is unavailable in the
+    // `HEAD@{2 minutes ago}` for both - the index form is unavailable in the
     // same call. Entries come back newest first, which *is* git's indexing, so
     // position gives back `HEAD@{0}`, `HEAD@{1}` … exactly as `git reflog`
     // prints them and as they can be typed into a command.
@@ -96,7 +96,7 @@ fn parse(text: &str) -> Vec<Entry> {
             let when = parts.next().map(relative_time_of).unwrap_or_default();
 
             // `%gs` reads "action: detail"; the action is everything before the
-            // first colon. Messages without one — git writes a few — keep the
+            // first colon. Messages without one - git writes a few - keep the
             // whole string as the action and an empty detail.
             let (action, detail) = match subject.split_once(':') {
                 Some((a, d)) => (a.trim().to_string(), d.trim().to_string()),
@@ -117,7 +117,7 @@ fn parse(text: &str) -> Vec<Entry> {
 /// Move `ref_name` back to the commit an entry points at.
 ///
 /// A hard reset, because a soft one would leave the working tree describing a
-/// state that no longer matches HEAD — and someone reaching for the reflog is
+/// state that no longer matches HEAD - and someone reaching for the reflog is
 /// trying to undo, not to stage a diff.
 ///
 /// This is itself recorded in the reflog, so an undo can be undone.
@@ -183,11 +183,11 @@ mod tests {
         // Null separation is the point: a reflog message is free text, and any
         // printable delimiter eventually appears inside one.
         let line =
-            format!("HEAD@{{1}}\u{0}commit: fix a|b, c:d — and more\u{0}{SHA}\u{0}1 day ago");
+            format!("HEAD@{{1}}\u{0}commit: fix a|b, c:d - and more\u{0}{SHA}\u{0}1 day ago");
         let e = &parse(&line)[0];
         assert_eq!(e.action, "commit");
         assert_eq!(
-            e.detail, "fix a|b, c:d — and more",
+            e.detail, "fix a|b, c:d - and more",
             "only the first colon separates; the rest belongs to the message"
         );
     }

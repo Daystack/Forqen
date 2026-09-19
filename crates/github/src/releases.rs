@@ -1,7 +1,7 @@
 //! Releases and their assets.
 //!
 //! A release is a tag plus notes plus files. The tag part is local git; this
-//! covers the GitHub half — the notes people actually read and the binaries
+//! covers the GitHub half - the notes people actually read and the binaries
 //! they actually download.
 
 use serde::{Deserialize, Serialize};
@@ -40,8 +40,8 @@ impl Release {
 
     /// One word for the state.
     ///
-    /// Draft and prerelease are independent flags — a draft prerelease is
-    /// legal — so they cannot be read as an enum, and "draft" is the one that
+    /// Draft and prerelease are independent flags - a draft prerelease is
+    /// legal - so they cannot be read as an enum, and "draft" is the one that
     /// matters more since a draft is invisible to everyone else.
     pub fn state(&self) -> &'static str {
         match (self.draft, self.prerelease) {
@@ -65,7 +65,7 @@ impl Asset {
     /// Human-readable size.
     ///
     /// Binary units, because that is what a file manager shows and a release
-    /// asset is a file — a number that disagrees with the desktop by 7% reads
+    /// asset is a file - a number that disagrees with the desktop by 7% reads
     /// as a bug.
     pub fn human_size(&self) -> String {
         const UNITS: [&str; 5] = ["B", "KiB", "MiB", "GiB", "TiB"];

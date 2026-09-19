@@ -1,6 +1,6 @@
 //! Gists.
 //!
-//! A gist is a repository, but nobody treats it as one — it is a paste with a
+//! A gist is a repository, but nobody treats it as one - it is a paste with a
 //! URL. So this covers the two things people do: look at the ones they have,
 //! and make a new one from a file or a selection.
 
@@ -18,7 +18,7 @@ pub struct Gist {
     pub html_url: Option<String>,
     pub created_at: Option<String>,
     /// Keyed by filename. A `BTreeMap` rather than a `HashMap` so the order is
-    /// the same on every render — a list that reshuffles between refreshes
+    /// the same on every render - a list that reshuffles between refreshes
     /// looks like it changed when it did not.
     #[serde(default)]
     pub files: BTreeMap<String, GistFile>,
