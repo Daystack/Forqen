@@ -24,6 +24,7 @@ pub mod rebase;
 pub mod reflog;
 pub mod releases;
 pub mod repo_settings;
+pub mod repo_switcher;
 pub mod review;
 pub mod search;
 pub mod settings;
@@ -183,10 +184,38 @@ pub fn build_window(
     // repository loaded and the Changes page became unreachable. A header bar
     // has exactly one title widget, so the switcher gets it and the repository
     // context goes where it is more at home anyway — above the branch list.
-    let sidebar_title = adw::WindowTitle::new("Branches", "");
+    //
+    // It is a button, not a plain `AdwWindowTitle`, because clicking it is
+    // how GitHub Desktop reveals its repository switcher — a `MenuButton`
+    // can't host an `AdwWindowTitle` directly, so this reproduces its look
+    // with two plain labels instead, and `load_repo` sets their text the
+    // same way it always set the title/subtitle.
+    let repo_title = gtk::Label::new(Some("Branches"));
+    repo_title.set_xalign(0.0);
+    repo_title.add_css_class("title");
+    repo_title.set_ellipsize(gtk::pango::EllipsizeMode::End);
+    let repo_subtitle = gtk::Label::new(None);
+    repo_subtitle.set_xalign(0.0);
+    repo_subtitle.add_css_class("subtitle");
+    repo_subtitle.set_ellipsize(gtk::pango::EllipsizeMode::End);
+    let repo_title_box = gtk::Box::new(gtk::Orientation::Vertical, 0);
+    repo_title_box.append(&repo_title);
+    repo_title_box.append(&repo_subtitle);
+
+    // Content is populated just before the popover opens (wired further
+    // down, once `views` exists) rather than once here, so switching to a
+    // different repository or cloning a new one is reflected the next time
+    // this opens instead of showing whatever was current at startup.
+    let switcher_popover = gtk::Popover::new();
+    let switcher_btn = gtk::MenuButton::new();
+    switcher_btn.set_child(Some(&repo_title_box));
+    switcher_btn.set_popover(Some(&switcher_popover));
+    switcher_btn.add_css_class("flat");
+    switcher_btn.set_tooltip_text(Some("Switch repository"));
+
     let sidebar = adw::ToolbarView::new();
     let sidebar_header = adw::HeaderBar::new();
-    sidebar_header.set_title_widget(Some(&sidebar_title));
+    sidebar_header.set_title_widget(Some(&switcher_btn));
     sidebar.add_top_bar(&sidebar_header);
     sidebar.set_content(Some(&sidebar_scroll));
 
@@ -400,10 +429,45 @@ pub fn build_window(
         .max_sidebar_width(260.0)
         .build();
 
+    // Shown instead of `split` until a repository is open. Nothing decided
+    // what "just launched, nothing loaded yet" looked like before this — a
+    // fresh install with no CLI argument and an empty recent list rendered
+    // the History/Changes stack anyway, empty and undesigned for that case.
+    //
+    // Its repository list is populated once, further down, right after
+    // `views` exists — not refreshed on every show the way the popover's is,
+    // because `load_repo` always switches `root_stack` to "app" on success
+    // and forqen has no "close repository" action, so this page is only ever
+    // seen once per launch.
+    let start_open_btn = gtk::Button::with_label("Open a Repository");
+    let start_clone_btn = gtk::Button::with_label("Clone a Repository");
+    start_clone_btn.add_css_class("suggested-action");
+    let start_actions = gtk::Box::new(gtk::Orientation::Horizontal, 8);
+    start_actions.set_halign(gtk::Align::Center);
+    start_actions.append(&start_open_btn);
+    start_actions.append(&start_clone_btn);
+
+    let start_list_holder = gtk::Box::new(gtk::Orientation::Vertical, 0);
+    start_list_holder.set_size_request(360, -1);
+
+    let start_page = gtk::Box::new(gtk::Orientation::Vertical, 16);
+    start_page.set_valign(gtk::Align::Center);
+    start_page.set_halign(gtk::Align::Center);
+    let start_title = gtk::Label::new(Some("No Repository Open"));
+    start_title.add_css_class("title-1");
+    start_page.append(&start_title);
+    start_page.append(&start_actions);
+    start_page.append(&start_list_holder);
+
+    let root_stack = gtk::Stack::new();
+    root_stack.add_named(&start_page, Some("start"));
+    root_stack.add_named(&split, Some("app"));
+    root_stack.set_visible_child_name("start");
+
     // The overlay wraps everything so `sync` can find it from the window and
     // post toasts without every call site threading a reference through.
     let toasts = adw::ToastOverlay::new();
-    toasts.set_child(Some(&split));
+    toasts.set_child(Some(&root_stack));
     window.set_content(Some(&toasts));
 
     // Collapse the branch sidebar on a narrow window.
@@ -467,7 +531,9 @@ pub fn build_window(
         state: state.clone(),
         model: model.clone(),
         refs_list: refs_list.clone(),
-        sidebar_title: sidebar_title.clone(),
+        repo_title: repo_title.clone(),
+        repo_subtitle: repo_subtitle.clone(),
+        root_stack: root_stack.clone(),
         prefs: prefs.clone(),
         stack: stack.clone(),
         conflicts_page: conflicts_page.clone(),
@@ -519,6 +585,49 @@ pub fn build_window(
                 Rc::new(move |path| views.load_repo(path)),
             );
         });
+    }
+
+    // Rebuilt on every open rather than once: a repository opened or cloned
+    // since the last time this popover showed must appear the next time it
+    // does, and it is cheap enough (this is the same list construction the
+    // start page below does exactly once).
+    {
+        let views = views.clone();
+        let prefs_ = prefs.clone();
+        let popover = switcher_popover.clone();
+        switcher_popover.connect_show(move |p| {
+            let views = views.clone();
+            let popover = popover.clone();
+            let repos = repo_switcher::known_repos(prefs_.as_ref());
+            let list = repo_switcher::build_list(
+                &repos,
+                Rc::new(move |path| {
+                    popover.popdown();
+                    views.load_repo(path);
+                }),
+            );
+            p.set_child(Some(&list));
+        });
+    }
+
+    start_open_btn.connect_clicked({
+        let open_btn = open_btn.clone();
+        move |_| open_btn.emit_clicked()
+    });
+    start_clone_btn.connect_clicked({
+        let clone_btn = clone_btn.clone();
+        move |_| clone_btn.emit_clicked()
+    });
+
+    // Populated once: `load_repo` always leaves `root_stack` on "app" after a
+    // successful open, and there is no "close repository" action, so this
+    // page — unlike the popover above — is never shown a second time in the
+    // same run to make a live refresh worth wiring.
+    {
+        let repos = repo_switcher::known_repos(prefs.as_ref());
+        let views = views.clone();
+        let list = repo_switcher::build_list(&repos, Rc::new(move |path| views.load_repo(path)));
+        start_list_holder.append(&list);
     }
 
     wire_selection(&selection, &state, &detail);
@@ -1124,7 +1233,9 @@ struct Views {
     state: AppState,
     model: CommitListModel,
     refs_list: gtk::ListBox,
-    sidebar_title: adw::WindowTitle,
+    repo_title: gtk::Label,
+    repo_subtitle: gtk::Label,
+    root_stack: gtk::Stack,
     prefs: Option<gtk::gio::Settings>,
     stack: adw::ViewStack,
     conflicts_page: adw::ViewStackPage,
@@ -1241,9 +1352,14 @@ impl Views {
         self.update_conflicts();
         self.update_pulls();
 
+        // A repository just opened successfully — whatever the window was
+        // showing before (the start page, or another repository), this is
+        // the point where the real UI takes over.
+        self.root_stack.set_visible_child_name("app");
+
         if let Some((name, branch)) = self.state.with(|s| s.name_and_branch()) {
-            self.sidebar_title.set_title(&name);
-            self.sidebar_title.set_subtitle(&branch);
+            self.repo_title.set_label(&name);
+            self.repo_subtitle.set_label(&branch);
             // The window title is what the task switcher and dock show.
             self.window.set_title(Some(&format!("{name} — {branch}")));
         }

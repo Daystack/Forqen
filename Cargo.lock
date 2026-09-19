@@ -3718,6 +3718,7 @@ dependencies = [
  "gtk4",
  "libadwaita",
  "reqwest",
+ "tempfile",
  "tokio",
  "tracing",
 ]
